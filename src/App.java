@@ -38,7 +38,8 @@ public class App {
                     break;
                 case 2:
                     String sin, fullName, occupation, address, dateOfBirth;
-                    do {
+                    String[] fields = new String[]{"Sin Number", "Full Name", "Occupation", "Address", "Date of Birth"};
+                    /*do {
                         System.out.println("Enter the sin: ");
                         sin = input.nextLine().trim();
                     } while (sin.length() == 0);
@@ -57,8 +58,9 @@ public class App {
                     do {
                         System.out.println("Enter the date: ");
                         dateOfBirth = input.nextLine().trim();
-                    } while (dateOfBirth == null);
-                    user.createUser(sin, fullName, occupation, address, dateOfBirth);
+                    } while (dateOfBirth == null);*/
+                    String[] inputs = SQLUtils.getInputArgs(fields, 5);
+                    user.createUser(inputs[0], inputs[1], inputs[2], inputs[3], inputs[4]);
                     break;
             }
         }
