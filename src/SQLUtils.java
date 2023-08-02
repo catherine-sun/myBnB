@@ -18,12 +18,12 @@ public class SQLUtils {
         return str;
     }
 
-    public static String[] getInputArgs (String[] names, int numArgs) {
+    public static String[] getInputArgs (String[] names) {
         Scanner input = new Scanner(System.in);
-        String[] args = new String[numArgs];
-        for (int i = 0; i < numArgs; i++){
+        String[] args = new String[names.length];
+        for (int i = 0; i < names.length; i++){
             do {
-                System.out.println("Enter field " + names[i] + ":");
+                System.out.println("Enter " + names[i] + ":");
                 args[i] = input.nextLine().trim();
             } while (args[i].length() == 0);
         }

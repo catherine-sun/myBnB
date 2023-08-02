@@ -1,3 +1,3 @@
-public class Booking {
+public class Booking extends DBTable {
     
 }
