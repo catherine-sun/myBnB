@@ -28,12 +28,12 @@ public class Setup {
             } while (pwd.length() == 0);
 
         } while (!db.connect(dbName, usr, pwd));
-        
+
         DBTable.db = db;
 
         createData();
         updateData();
-    } 
+    }
 
     public static void createData (){
         DBTable.dev = true;
@@ -46,7 +46,7 @@ public class Setup {
         User.createUser("166666661", "Eric Corlett", "Professor", "1185 Military Trail", "1979-11-14");
         User.createUser("177777771", "Nick Koudas", "Professor", "1185 Military Trail", "1983-09-23");
         User.createUser("188888881", "Bianca Schroeder", "Professor", "1185 Military Trail", "1983-09-23");
-       
+
         User.createUser("266666662", "Tony Stark", "Super Hero", "1 Main Street", "1980-03-16");
         User.createUser("277777772", "Clark Kent", "Super Hero", "2 Main Street", "1985-10-03");
         User.createUser("288888882", "Bruce Wayne", "Super Hero", "3 Main Street2", "1978-02-22");
@@ -136,7 +136,7 @@ public class Setup {
 
         Booking.bookListing("177777771", "7", "2023-04-17", "2023-05-19");
 
-        
+
         Booking.bookListing("166666661", "8", "2023-06-07", "2023-06-09");
         Booking.bookListing("122222221", "8", "2023-07-12", "2023-07-14");
         Booking.bookListing("188888881", "8", "2023-07-22", "2023-07-24");
@@ -186,14 +186,14 @@ public class Setup {
             "INSERT INTO Rating (authorSin, renterSin, listingId, startDate, score, object, commentBody) VALUES ('266666662', '266666662', 1, '2022-10-23', 5, 'Listing', 'Lovely home! Comfortable bed and clean carpet')",
             "INSERT INTO Rating (authorSin, renterSin, listingId, startDate, score, object, commentBody) VALUES ('144444441', '266666662', 1, '2022-10-23', 5, 'Renter', 'Very considerate renter! Definitely recommend')",
             "INSERT INTO Rating (authorSin, renterSin, listingId, startDate, score, object, commentBody) VALUES ('177777771', '177777771', 11, '2023-02-01', 3, 'Host', 'Host was quite unresponsive during the entire stay')",
-            
+
             "INSERT INTO Rating (authorSin, renterSin, listingId, startDate, score, object, commentBody) VALUES ('166666661', '166666661', 6, '2023-06-17', 4, 'Host', 'While their broken english was hard to understand, they still tried to communicate as best as possible.')",
             "INSERT INTO Rating (authorSin, renterSin, listingId, startDate, score, object, commentBody) VALUES ('166666661', '166666661', 6, '2023-06-17', 3, 'Listing', 'The water was too cold')",
 
             "INSERT INTO Rating (authorSin, renterSin, listingId, startDate, score, object, commentBody) VALUES ('188888881', '188888881', 8, '2023-07-22', 1, 'Listing', 'Ugliest room I have ever seen. Bed was itchy and uncomfortable.')",
             "INSERT INTO Rating (authorSin, renterSin, listingId, startDate, score, object, commentBody) VALUES ('144444441', '188888881', 8, '2023-07-22', 5, 'Renter', 'Clean and considerate! Recommended booking with him!')",
 
-        };  
+        };
 
         for (String query: queries) {
             DBTable.db.executeUpdate(query, null, null);

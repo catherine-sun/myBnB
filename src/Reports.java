@@ -290,7 +290,10 @@ public class Reports extends DBTable {
 			QueryResult res = db.execute(query, null, null);
 
 			String str = "******* Rank Hosts By Cancellations *******\n";
-			for (int num = 1; num <= 10 && res.rs.next(); num++) {
+			if (res.rs == null) {
+				str += "Nothing to see\n";
+			}
+			for (int num = 1; num <= 10 && res.rs != null && res.rs.next(); num++) {
 				str += num + ". " + res.rs.getString("fullName") + " with " + res.rs.getInt("count") + " cancellation(s)\n";
 			}
 			printReport(str.trim());
@@ -298,11 +301,15 @@ public class Reports extends DBTable {
 			query = String.format("SELECT fullName, COUNT(*) as count FROM Booking INNER JOIN User ON renterSin = sinNumber" +
 				" WHERE bookingStatus = '%s' GROUP BY renterSin ORDER BY COUNT(*) DESC", Booking.STATUS_CANCELLED_RENTER);
 
+			System.out.println(query);
+
 			res = db.execute(query, null, null);
 
 			str = "******* Rank Renters By Cancellations *******\n";
-
-			for (int num = 1; num <= 10 && res.rs.next(); num++) {
+			if (res.rs == null) {
+				str += "Nothing to see\n";
+			}
+			for (int num = 1; num <= 10 && res.rs != null && res.rs.next(); num++) {
 				str += num + ". " + res.rs.getString("fullName") + " with " + res.rs.getInt("count") + " cancellation(s)\n";
 			}
 			printReport(str.trim());

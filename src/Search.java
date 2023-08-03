@@ -9,7 +9,7 @@ public class Search extends DBTable {
     private static String postedListings = PostingDB + " INNER JOIN " + ListingDB
         + " ON " + ListingDB + ".listingId = " + PostingDB + ".listingId";
 
-        public static void searchByAddress(String streetAddress, String postalCode, String city, String country) {
+    public static void searchByAddress(String streetAddress, String postalCode, String city, String country) {
 
         String filter = (isNullOrEmpty(streetAddress) ? "" : "streetAddress = '" + streetAddress + "'")
             + (isNullOrEmpty(postalCode) ? "" : "postalCode = '" + postalCode + "'")
@@ -19,7 +19,6 @@ public class Search extends DBTable {
         if (!isNullOrEmpty(filter)) {
             filter = "WHERE " + filter;
         }
-
 
         String query = String.format("SELECT %s FROM %s %s",
             displayedFields, postedListings, filter);
@@ -109,10 +108,3 @@ public class Search extends DBTable {
     }
 
 }
-
-
-// - return all listings in the vicinty of a location ordered by closest (distance, location specified by user)
-// - option to rank listing by ascending or descending price
-// - search by postal code: return all listings in the same and adjacent postal codes
-// - search exact queries (address input, return listing if it exists)
-// - all searches support filters (time, price)
