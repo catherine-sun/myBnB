@@ -129,8 +129,6 @@ public class App {
                             updateListing, updateAvailability, updatePrice,
                             deleteListing, start);
 
-        String searchPrompt = "TODO";
-
         User user = new User();
         user.setConnection(db);
         Listing listing = new Listing();
@@ -197,9 +195,7 @@ public class App {
                         }
                         System.out.println("Susccessfully logged in!");
                         break;
-
                     }
-
                     System.out.println("User does not exist. Creating a new user...");
 
                 case createUser:
@@ -217,16 +213,21 @@ public class App {
                     break;
 
                 case searchListings:
-                    System.out.println(searchPrompt);
+                    listing.searchAndFilter();
                     /* TODO */
                     break;
 
-                case bookListing:
+                default:
                     if (sessionUser == null) {
                         System.out.println("Please log in or create an account");
-                        break;
+                        continue;
                     }
+                    break;
+                }
+            }
 
+            switch (choice) {
+                case bookListing:
                     sin = sessionUser.getSinNumber();
                     if (!sessionUser.isRenter()) {
                         user.createRenter(sin);
@@ -236,34 +237,18 @@ public class App {
                     break;
 
                 case cancelBooking:
-                    if (sessionUser == null) {
-                        System.out.println("Please log in or create an account");
-                        break;
-                    }
                     /* TODO */
                     break;
 
                 case rate:
-                    if (sessionUser == null) {
-                        System.out.println("Please log in or create an account");
-                        break;
-                    }
                     /* TODO */
                     break;
 
                 case displayUser:
-                    if (sessionUser == null) {
-                        System.out.println("Please log in or create an account");
-                        break;
-                    }
                     /* TODO */
                     break;
 
                 case updateUser:
-                    if (sessionUser == null) {
-                        System.out.println("Please log in or create an account");
-                        break;
-                    }
                     do {
                         System.out.print("1 - Occupation\n"
                                         + "2 - Address\n"
@@ -283,11 +268,7 @@ public class App {
                     break;
 
                 case addPay:
-                    if (sessionUser == null) {
-                        System.out.println("Please log in or create an account");
-                        break;
-                    }
-
+                    // If the current user isn't a renter, create a new entry in the renter table
                     sin = sessionUser.getSinNumber();
                     if (!sessionUser.isRenter()) {
                         user.createRenter(sin);
@@ -297,11 +278,6 @@ public class App {
                     break;
 
                 case rentingHistory:
-                    if (sessionUser == null) {
-                        System.out.println("Please log in or create an account");
-                        break;
-                    }
-
                     if (!sessionUser.isRenter()) {
                         System.out.println("Empty");
                     }
@@ -309,20 +285,12 @@ public class App {
                     break;
 
                 case deleteUser:
-                    if (sessionUser == null) {
-                        System.out.println("Please log in or create an account");
-                        break;
-                    }
                     user.deleteUser(sessionUser.getSinNumber());
                     sessionUser = null;
                     break;
 
                 case createListing:
-                    if (sessionUser == null) {
-                        System.out.println("Please log in or create an account");
-                        break;
-                    }
-
+                    // If the current user isn't a host, create a new entry in the host table
                     sin = sessionUser.getSinNumber();
                     if (!sessionUser.isHost()) {
                         user.createHost(sin);
@@ -335,11 +303,6 @@ public class App {
                     break;
 
                 case displayUserListings:
-                    if (sessionUser == null) {
-                        System.out.println("Please log in or create an account");
-                        break;
-                    }
-
                     if (!sessionUser.isHost()) {
                         System.out.println("No listings to show");
                         break;
@@ -348,11 +311,6 @@ public class App {
                     break;
 
                 case updateListing:
-                    if (sessionUser == null) {
-                        System.out.println("Please log in or create an account");
-                        break;
-                    }
-
                     if (!sessionUser.isHost()) {
                         System.out.println("No listings to update");
                         break;
@@ -361,11 +319,6 @@ public class App {
                     break;
 
                 case updateAvailability:
-                    if (sessionUser == null) {
-                        System.out.println("Please log in or create an account");
-                        break;
-                    }
-
                     if (!sessionUser.isHost()) {
                         System.out.println("No listings to update");
                         break;
@@ -377,11 +330,6 @@ public class App {
                     break;
 
                 case updatePrice:
-                    if (sessionUser == null) {
-                        System.out.println("Please log in or create an account");
-                        break;
-                    }
-
                     if (!sessionUser.isHost()) {
                         System.out.println("No listings to update");
                         break;
@@ -390,17 +338,12 @@ public class App {
                     break;
 
                 case deleteListing:
-                    if (sessionUser == null) {
-                        System.out.println("Please log in or create an account");
-                        break;
-                    }
                     /* TODO */
                     break;
 
                 default:
                     break;
             }
-        }
 
         input.close();
     }

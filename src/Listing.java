@@ -31,14 +31,6 @@ public class Listing extends DBTable {
                 PostingDB, "listingId, hostSin", listingId, sin);
 
         db.executeUpdate(query, null, null);
-
-        // if the sin number isnt a host, create a new entry in the host table
-        User user = new User();
-        user.setConnection(db);
-        if (!user.isHost(sin)) {
-            user.createHost(sin);
-            System.out.println("Congrats on your first listing!");
-        }
     }
 
     public void setAvailableDateSingle (String listingId)
@@ -82,5 +74,12 @@ public class Listing extends DBTable {
                     startCalendar.roll(Calendar.MONTH, true);
             }
         }
+    }
+
+    public void searchAndFilter() {
+        String searchPrompt = "TODO";
+
+        System.out.println(searchPrompt);
+
     }
 }
