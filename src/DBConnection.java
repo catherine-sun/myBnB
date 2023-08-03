@@ -1,6 +1,5 @@
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -9,12 +8,15 @@ import java.sql.ResultSet;
 public class DBConnection {
 
     private Connection conn;
+    private static final String connectionString = "jdbc:mysql://localhost:3306/";
 
-    public void connect (String connectionString, String user, String password){
+    public boolean connect (String dbName, String user, String password){
+        boolean success = false;
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
-            conn = DriverManager.getConnection(connectionString, user, password);
+            conn = DriverManager.getConnection(connectionString + dbName, user, password);
             System.out.println("Successfully connected to database");
+            success = true;
         } catch (SQLException ex) {
             System.out.println("Failed to connect to database");
             System.out.println("SQLException: " + ex.getMessage());
@@ -23,6 +25,8 @@ public class DBConnection {
         } catch (ClassNotFoundException e) {
             System.out.println("Class Not Found Error: " + e.getMessage());
         }
+
+        return success;
     }
 
     public QueryResult execute (String query, String success, String error) {
@@ -66,12 +70,13 @@ public class DBConnection {
         }
         return new QueryResult(stmt, rs);
     }
+
     public static void cleanResultSet (ResultSet rs){
         if (rs != null) {
             try {
                 rs.close();
             } catch (SQLException sqlEx) { } // ignore
-    
+
             rs = null;
         }
     }
@@ -81,9 +86,9 @@ public class DBConnection {
             try {
                 stmt.close();
             } catch (SQLException sqlEx) { } // ignore
-    
+
             stmt = null;
         }
     }
-    
+
 }
