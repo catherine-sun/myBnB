@@ -6,11 +6,11 @@ public abstract class DBTable {
     public final String BookingDB = "Booking";
     public final String ListingDB = "Listing";
     public final String PostingDB = "Posting";
-    
+    public final String AvailableDateDB = "AvailableDate";
+
     public DBConnection db;
 
     public void setConnection (DBConnection db) {
         this.db = db;
     }
-
 }

@@ -5,6 +5,12 @@ public class App {
 
     private static UserModel sessionUser;
 
+    enum Menu {
+        MAIN,
+        ACCOUNT,
+        HOST_TOOLKIT
+    };
+
     public static void main(String[] args) throws Exception {
         Scanner input = new Scanner(System.in);
         DBConnection db = new DBConnection();
@@ -52,6 +58,7 @@ public class App {
         */
 
         /* Commands */
+        final int start = 0;
         final int newSession = 1;
         final int createUser = 2;
         final int displayListings = 3;
@@ -105,9 +112,9 @@ public class App {
                             + "%2d - Add payment info\n"
                             + "%2d - View my renting history\n"
                             + "%2d - Delete my account\n"
-                            + "0 - Return to main menu",
+                            + "%2d - Return to main menu",
                             displayUser, updateUser, addPay, rentingHistory,
-                            deleteUser);
+                            deleteUser, start);
 
         String hostPrompt = String.format(
                             "******* Host Toolkit *******\n"
@@ -117,10 +124,10 @@ public class App {
                             + "%2d - Change listing availability\n"
                             + "%2d - Change listing price\n"
                             + "%2d - Remove listing\n"
-                            + "0 - Return to main menu",
+                            + "%2d - Return to main menu",
                             createListing, displayUserListings,
                             updateListing, updateAvailability, updatePrice,
-                            deleteListing);
+                            deleteListing, start);
 
         String searchPrompt = "TODO";
 
@@ -128,44 +135,39 @@ public class App {
         user.setConnection(db);
         Listing listing = new Listing();
         listing.setConnection(db);
-        String[] inp, f;
+        String[] inp, fields;
+        String sin;
+        QueryResult res;
 
-        enum menu {
-            MAIN,
-            ACCOUNT,
-            HOST_TOOLKIT
-        }
+        Menu curMenu = Menu.MAIN;
 
-        menu curMenu = menu.MAIN;
-
-        int choice = 0;
+        int choice = start;
         while (choice != exit) {
 
             switch(choice) {
                 case gotoAccount:
-                    curMenu = menu.ACCOUNT;
+                    curMenu = Menu.ACCOUNT;
                     System.out.println(userPrompt);
                     break;
                 case gotoHostToolkit:
-                    curMenu = menu.HOST_TOOLKIT;
+                    curMenu = Menu.HOST_TOOLKIT;
                     System.out.println(hostPrompt);
                     break;
                 default:
+                    curMenu = Menu.MAIN;
                     System.out.println(prompt);
                     break;
             }
-            System.out.println(curMenu);
 
             choice = input.nextInt();
             input.nextLine();
 
-            if ((curMenu == menu.MAIN && (choice < 1 || choice > 10)) ||
-                (curMenu == menu.ACCOUNT && choice != 0 && (choice < 11 || choice > 15)) ||
-                (curMenu == menu.HOST_TOOLKIT && choice != 0 && (choice < 16 || choice > 21))) {
-
-                System.out.println((choice != 0 || choice < 11 || choice > 15));
-                System.out.println("Invalid option " + choice  + " on menu " + curMenu);
-                continue;
+            if ((curMenu == Menu.MAIN && (choice < 1 || choice > 10)) ||
+                ((curMenu == Menu.ACCOUNT && (choice < 11 || choice > 15)) ||
+                (curMenu == Menu.HOST_TOOLKIT && (choice < 16 || choice > 21)))
+                && choice != start) {
+                System.out.println("Invalid option");
+                choice = start;
             }
 
             switch(choice) {
@@ -173,35 +175,90 @@ public class App {
                     if (sessionUser != null) {
                         System.out.println("Logged out of " + sessionUser.getFullName());
                     }
-                    /* TODO */
+                    do {
+                        System.out.print("Enter SIN: ");
+                        sin = input.nextLine().trim();
+
+                        if (!sin.matches("[A-Za-z0-9]{9}")) {
+                            System.out.println("SIN must be 9 characters long and consist of only letters and numbers");
+                            input.nextLine();
+                        }
+                    } while (!sin.matches("[A-Za-z0-9]{9}"));
+
+                    res = user.findUser(sin);
+                    sessionUser = res.rs.next() ? new UserModel(res.rs) : null;
+
+                    if (sessionUser != null) {
+                        if (user.isHost(sin)) {
+                            sessionUser.setRole("Host");
+                        }
+                        if (user.isRenter(sin)) {
+                            sessionUser.setRole("Renter");
+                        }
+                        System.out.println("Susccessfully logged in!");
+                        break;
+
+                    }
+
+                    System.out.println("User does not exist. Creating a new user...");
+
                 case createUser:
-                    f = new String[]{"Sin Number", "Full Name", "Occupation", "Address", "Date of Birth"};
-                    inp = SQLUtils.getInputArgs(f);
+                    if (sessionUser != null) {
+                        System.out.println("Logged out of " + sessionUser.getFullName());
+                    }
+                    fields = new String[]{"Sin Number", "Full Name", "Occupation", "Address", "Date of Birth"};
+                    inp = SQLUtils.getInputArgs(fields);
                     user.createUser(inp[0], inp[1], inp[2], inp[3], inp[4]);
                     sessionUser = new UserModel(inp[0], inp[1], inp[2], inp[3], Date.valueOf(inp[4]));
                     break;
+
                 case displayListings:
                     /* TODO */
                     break;
+
                 case searchListings:
                     System.out.println(searchPrompt);
                     /* TODO */
                     break;
+
                 case bookListing:
+                    if (sessionUser == null) {
+                        System.out.println("Please log in or create an account");
+                        break;
+                    }
+
+                    sin = sessionUser.getSinNumber();
+                    if (!sessionUser.isRenter()) {
+                        user.createRenter(sin);
+                        sessionUser.setRole("Renter");
+                    }
                     /* TODO */
                     break;
+
                 case cancelBooking:
+                    if (sessionUser == null) {
+                        System.out.println("Please log in or create an account");
+                        break;
+                    }
                     /* TODO */
                     break;
+
                 case rate:
+                    if (sessionUser == null) {
+                        System.out.println("Please log in or create an account");
+                        break;
+                    }
                     /* TODO */
                     break;
-                case exit:
-                    /* TODO */
-                    break;
+
                 case displayUser:
+                    if (sessionUser == null) {
+                        System.out.println("Please log in or create an account");
+                        break;
+                    }
                     /* TODO */
                     break;
+
                 case updateUser:
                     if (sessionUser == null) {
                         System.out.println("Please log in or create an account");
@@ -218,123 +275,136 @@ public class App {
                         input.nextLine();
 
                         if (choice < 0 || choice >= 4) continue;
-                        f = new String[]{"occupation", "address", "dateOfBirth"};
-                        inp = SQLUtils.getInputArgs(new String[] {f[choice - 1]});
-                        user.updateProfile(sessionUser.getSinNumber(), f[choice -1], inp[0]);
+                        fields = new String[]{"occupation", "address", "dateOfBirth"};
+                        inp = SQLUtils.getInputArgs(new String[] {fields[choice - 1]});
+                        user.updateProfile(sessionUser.getSinNumber(), fields[choice -1], inp[0]);
 
                     } while (choice != 4);
-                break;
+                    break;
+
                 case addPay:
+                    if (sessionUser == null) {
+                        System.out.println("Please log in or create an account");
+                        break;
+                    }
+
+                    sin = sessionUser.getSinNumber();
+                    if (!sessionUser.isRenter()) {
+                        user.createRenter(sin);
+                        sessionUser.setRole("Renter");
+                    }
                     /* TODO */
                     break;
+
                 case rentingHistory:
+                    if (sessionUser == null) {
+                        System.out.println("Please log in or create an account");
+                        break;
+                    }
+
+                    if (!sessionUser.isRenter()) {
+                        System.out.println("Empty");
+                    }
                     /* TODO */
                     break;
+
                 case deleteUser:
-                    /* TODO */
+                    if (sessionUser == null) {
+                        System.out.println("Please log in or create an account");
+                        break;
+                    }
+                    user.deleteUser(sessionUser.getSinNumber());
+                    sessionUser = null;
                     break;
+
                 case createListing:
-                    f = new String[] {"Your Sin Number", "Listing Type", "Latitude", "Longitude", "Street Address", "Postal Code", "City", "Country"};
-                    inp = SQLUtils.getInputArgs(f);
-                    listing.createListing(inp[0], inp[1], inp[2], inp[3], inp[4], inp[5], inp[6], inp[7]);
+                    if (sessionUser == null) {
+                        System.out.println("Please log in or create an account");
+                        break;
+                    }
+
+                    sin = sessionUser.getSinNumber();
+                    if (!sessionUser.isHost()) {
+                        user.createHost(sin);
+                        sessionUser.setRole("Host");
+                    }
+
+                    fields = new String[] {"Listing Type", "Latitude", "Longitude", "Street Address", "Postal Code", "City", "Country"};
+                    inp = SQLUtils.getInputArgs(fields);
+                    listing.createListing(sin, inp[0], inp[1], inp[2], inp[3], inp[4], inp[5], inp[6]);
                     break;
+
                 case displayUserListings:
+                    if (sessionUser == null) {
+                        System.out.println("Please log in or create an account");
+                        break;
+                    }
+
+                    if (!sessionUser.isHost()) {
+                        System.out.println("No listings to show");
+                        break;
+                    }
                     /* TODO */
                     break;
+
                 case updateListing:
+                    if (sessionUser == null) {
+                        System.out.println("Please log in or create an account");
+                        break;
+                    }
+
+                    if (!sessionUser.isHost()) {
+                        System.out.println("No listings to update");
+                        break;
+                    }
                     /* TODO */
                     break;
+
                 case updateAvailability:
-                    /* TODO */
+                    if (sessionUser == null) {
+                        System.out.println("Please log in or create an account");
+                        break;
+                    }
+
+                    if (!sessionUser.isHost()) {
+                        System.out.println("No listings to update");
+                        break;
+                    }
+
+                    fields = new String[] {"Listing Id"};
+                    inp = SQLUtils.getInputArgs(fields);
+                    listing.setAvailableDateRange(inp[0]);
                     break;
+
                 case updatePrice:
+                    if (sessionUser == null) {
+                        System.out.println("Please log in or create an account");
+                        break;
+                    }
+
+                    if (!sessionUser.isHost()) {
+                        System.out.println("No listings to update");
+                        break;
+                    }
                     /* TODO */
                     break;
+
                 case deleteListing:
+                    if (sessionUser == null) {
+                        System.out.println("Please log in or create an account");
+                        break;
+                    }
                     /* TODO */
                     break;
+
                 default:
-                    curMenu = menu.MAIN;
                     break;
             }
         }
 
-
-        // // DBConnection db = new DBConnection();
-        // User user = new User();
-        // user.setConnection(db);
-        // Listing listing = new Listing();
-        // listing.setConnection(db);
-        // int cmd;
-        // boolean running = false;
-
-        // while (running) {
-        //     System.out.println("Enter command: ");
-        //     cmd = input.nextInt();
-        //     input.nextLine();
-        //     String sin;
-        //     String[] inputs, fields;
-        //     switch(cmd){
-        //         case 0:
-        //             running = false;
-        //             break;
-        //         case 1:
-        //             String connectString1, user1, pwd1;
-        //             do {
-        //                 System.out.println("Enter the connection string: ");
-        //                 connectString1 = input.nextLine().trim();
-        //             } while (connectString1.length() == 0);
-        //             do {
-        //                 System.out.println("Enter the user: ");
-        //                 user1 = input.nextLine().trim();
-        //             } while (user1.length() == 0);
-        //             do {
-        //                 System.out.println("Enter the password: ");
-        //                 pwd1 = input.nextLine().trim();
-        //             } while (pwd1.length() == 0);
-        //             db.connect(connectString1, user1, pwd1);
-        //             break;
-        //         case 2:
-        //             fields = new String[]{"Sin Number", "Full Name", "Occupation", "Address", "Date of Birth"};
-        //             inputs = SQLUtils.getInputArgs(fields);
-        //             user.createUser(inputs[0], inputs[1], inputs[2], inputs[3], inputs[4]);
-        //             break;
-        //         case 3:
-        //             // update user profile
-        //             fields = new String[] {"Sin Number"};
-        //             inputs = SQLUtils.getInputArgs(fields);
-        //             if (!user.isUser(inputs[0])) {
-        //                 System.out.println("Error. Invalid sin number = " + inputs[0]);
-        //             } else {
-        //                 sin = inputs[0];
-        //                 do {
-        //                     System.out.println("1. Occupation\n2. Address\n3. Date of birth\n4. Done\nEnter the field to update:");
-        //                     cmd = input.nextInt(); input.nextLine();
-        //                     if (cmd < 0 || cmd >= 4) continue;
-        //                     fields = new String[]{"occupation", "address", "dateOfBirth"};
-        //                     inputs = SQLUtils.getInputArgs(new String[] {fields[cmd - 1]});
-        //                     user.updateProfile(sin, fields[cmd -1], inputs[0]);
-        //                 } while (cmd != 4);
-
-        //             }
-        //             break;
-        //         case 4:
-        //             // create a new listing
-        //             fields = new String[] {"Your Sin Number", "Listing Type", "Latitude", "Longitude", "Street Address", "Postal Code", "City", "Country"};
-        //             inputs = SQLUtils.getInputArgs(fields);
-        //             listing.createListing(inputs[0], inputs[1], inputs[2], inputs[3], inputs[4], inputs[5], inputs[6], inputs[7]);
-        //             break;
-        //         case 5:
-        //     }
-        // }
         input.close();
     }
 
-    public void setSessionUser(UserModel usr) {
-        sessionUser = usr;
-    }
-
-    public UserModel getSessionUser() {
-        return sessionUser;
-    }
+    public void setSessionUser(UserModel usr) { sessionUser = usr; }
+    public UserModel getSessionUser() { return sessionUser; }
 }

@@ -36,11 +36,12 @@ CREATE TABLE Posting (
 	FOREIGN KEY (listingId) REFERENCES Listing(listingId) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-CREATE TABLE Booking (	
+CREATE TABLE Booking (
 	listingId INTEGER,
 	renterSin CHAR(9),
 	startDate DATE,
 	endDate DATE NOT NULL,
+	bookingStatus VARCHAR(17) NOT NULL,
 	PRIMARY KEY(listingId, renterSin, startDate),
 	FOREIGN KEY (listingId) REFERENCES Listing(listingId) ON DELETE CASCADE ON UPDATE CASCADE,
 	FOREIGN KEY (renterSin) REFERENCES User(sinNumber) ON DELETE CASCADE ON UPDATE CASCADE,
@@ -72,7 +73,7 @@ CREATE TABLE ProvidedAmenity (
 	FOREIGN KEY (itemId) REFERENCES Amenity(itemId) ON DELETE CASCADE ON UPDATE CASCADE,
 	FOREIGN KEY (listingId) REFERENCES Listing(listingId) ON DELETE CASCADE ON UPDATE CASCADE
 );
-	
+
 CREATE TABLE AvailableDate (
 	listingId INTEGER,
 	startDate DATE,
