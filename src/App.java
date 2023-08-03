@@ -8,7 +8,8 @@ public class App {
     enum Menu {
         MAIN,
         ACCOUNT,
-        HOST_TOOLKIT
+        HOST_TOOLKIT,
+        REPORTS
     };
 
     public static void main(String[] args) throws Exception {
@@ -61,11 +62,11 @@ public class App {
         final int start = 0;
         final int newSession = 1;
         final int createUser = 2;
-        final int displayListings = 3;
-        final int searchListings = 4;
-        final int bookListing = 5;
-        final int cancelBooking = 6;
-        final int rate = 7;
+        final int searchListings = 3;
+        final int bookListing = 4;
+        final int cancelBooking = 5;
+        final int rate = 6;
+        final int reports = 7;
         final int gotoAccount = 8;
         final int gotoHostToolkit = 9;
         final int exit = 10;
@@ -76,58 +77,54 @@ public class App {
         final int deleteUser = 15;
         final int createListing = 16;
         final int displayUserListings = 17;
-        final int updateListing = 18;
-        final int updateAvailability = 19;
-        final int updatePrice = 20;
-        final int deleteListing = 21;
+        final int updateAvailability = 18;
+        final int updatePrice = 19;
+        final int deleteListing = 20;
 
         String loginPrompt = sessionUser == null ?
-                            String.format("You are currently not signed in\n"
-                            + "%2d - Log in\n"
-                            + "%2d - Create a new account",
-                            newSession, createUser)
-                            : "You are currenlty signed in as "
-                            + sessionUser.getFullName();
+            String.format("You are currently not signed in\n"
+            + "%2d - Log in\n"
+            + "%2d - Create a new account",
+            newSession, createUser)
+            : "You are currenlty signed in as "
+            + sessionUser.getFullName();
 
         String prompt = String.format(
-                        "******* Welcome to myBnB! *******\n"
-                        + "%2d - Log in\n"
-                        + "%2d - Create a new account\n"
-                        + "%2d - Browse listings\n"
-                        + "%2d - Search and filter\n"
-                        + "%2d - Book a listing\n"
-                        + "%2d - Cancel a booking\n"
-                        + "%2d - Rate and comment\n"
-                        + "%2d - Account settings\n"
-                        + "%2d - Host toolkit\n"
-                        + "%2d - Exit session",
-                        newSession, createUser, displayListings, searchListings,
-                        bookListing, cancelBooking, rate, gotoAccount,
-                        gotoHostToolkit, exit);
+            "******* Welcome to myBnB! *******\n"
+            + "%2d - Log in\n"
+            + "%2d - Create a new account\n"
+            + "%2d - Browse and search listings\n"
+            + "%2d - Book a listing\n"
+            + "%2d - Cancel a booking\n"
+            + "%2d - Rate and comment\n"
+            + "%2d - Reports\n"
+            + "%2d - Account settings\n"
+            + "%2d - Host toolkit\n"
+            + "%2d - Exit session",
+            newSession, createUser, searchListings,
+            bookListing, cancelBooking, rate, reports, gotoAccount,
+            gotoHostToolkit, exit);
 
         String userPrompt = String.format(
-                            "******* Account Settings *******\n"
-                            + "%2d - View my profile\n"
-                            + "%2d - Change profile details\n"
-                            + "%2d - Add payment info\n"
-                            + "%2d - View my renting history\n"
-                            + "%2d - Delete my account\n"
-                            + "%2d - Return to main menu",
-                            displayUser, updateUser, addPay, rentingHistory,
-                            deleteUser, start);
+            "******* Account Settings *******\n"
+            + "%2d - View my profile\n"
+            + "%2d - Change profile details\n"
+            + "%2d - Add payment info\n"
+            + "%2d - View my renting history\n"
+            + "%2d - Delete my account\n"
+            + "%2d - Return to main menu",
+            displayUser, updateUser, addPay, rentingHistory, deleteUser, start);
 
         String hostPrompt = String.format(
-                            "******* Host Toolkit *******\n"
-                            + "%2d - Add a new listing\n"
-                            + "%2d - View my listings\n"
-                            + "%2d - Change listing details\n"
-                            + "%2d - Change listing availability\n"
-                            + "%2d - Change listing price\n"
-                            + "%2d - Remove listing\n"
-                            + "%2d - Return to main menu",
-                            createListing, displayUserListings,
-                            updateListing, updateAvailability, updatePrice,
-                            deleteListing, start);
+            "******* Host Toolkit *******\n"
+            + "%2d - Add a new listing\n"
+            + "%2d - View my listings\n"
+            + "%2d - Change listing availability\n"
+            + "%2d - Change listing price\n"
+            + "%2d - Remove listing\n"
+            + "%2d - Return to main menu",
+            createListing, displayUserListings, updateAvailability, updatePrice,
+            deleteListing, start);
 
         //User user = new User();
         //user.setConnection(db);
@@ -153,14 +150,21 @@ public class App {
                     curMenu = Menu.HOST_TOOLKIT;
                     System.out.println(hostPrompt);
                     break;
+                case reports:
+                    curMenu = Menu.REPORTS;
+                    Reports.prompt();
+                    choice = start;
+                    continue;
                 default:
                     curMenu = Menu.MAIN;
                     System.out.println(prompt);
                     break;
             }
 
+            System.out.print(": ");
             choice = input.nextInt();
             input.nextLine();
+
 
             if ((curMenu == Menu.MAIN && (choice < 1 || choice > 10)) ||
                 ((curMenu == Menu.ACCOUNT && (choice < 11 || choice > 15)) ||
@@ -200,12 +204,8 @@ public class App {
                     sessionUser = new UserModel(inp[0], inp[1], inp[2], inp[3], Date.valueOf(inp[4]));
                     continue;
 
-                case displayListings:
-                    /* TODO */
-                    continue;
-
                 case searchListings:
-                    /* TODO */
+                    Searching.searchAndFilter();
                     continue;
 
                 case gotoAccount:
@@ -270,10 +270,10 @@ public class App {
                 case updateUser:
                     do {
                         System.out.print("1 - Occupation\n"
-                                        + "2 - Address\n"
-                                        + "3 - Date of Birth\n"
-                                        + "4 - Done\n"
-                                        + "Enter the field to update: ");
+                            + "2 - Address\n"
+                            + "3 - Date of Birth\n"
+                            + "4 - Done\n"
+                            + "Enter the field to update: ");
 
                         choice = input.nextInt();
                         input.nextLine();
@@ -329,10 +329,6 @@ public class App {
 
             switch (choice) {
                 case displayUserListings:
-                    /* TODO */
-                    continue;
-
-                case updateListing:
                     /* TODO */
                     continue;
 

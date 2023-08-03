@@ -278,11 +278,4 @@ public class Listing extends DBTable {
 
         return SQLUtils.resultSetIsEmpty(res.rs);
     }
-
-    public static void searchAndFilter() {
-        String searchPrompt = "TODO";
-
-        System.out.println(searchPrompt);
-
-    }
 }
