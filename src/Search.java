@@ -30,7 +30,7 @@ public class Search extends DBTable {
 
     public static void searchNearby(String postalCode, double radius) {
 
-        double d[] = getXYFromPostalCode(postalCode);
+        String d[] = getXYFromPostalCode(postalCode);
 
         if (d == null) {
             System.out.println("No listing with postal code " + postalCode);
@@ -39,24 +39,25 @@ public class Search extends DBTable {
 
         String distance = "SQRT(POWER(longitude - " + d[0] + ", 2) +  POWER(latitude - " + d[1] + ", 2))";
 
-        String query = String.format("SELECT %s FROM %s WHERE %s <= %f",
-            displayedFields, postedListings, distance, radius);
+        String query = String.format("SELECT %s FROM %s WHERE %s != '%s' AND %s <= %f ORDER BY %s ASC",
+            displayedFields + ", " + distance, postedListings, ListingDB + ".listingId", d[2], distance, radius, "10");
 
         System.out.println(query);
         ResultSet rs = db.execute(query, null, null).rs;
         displayListings(rs);
     }
 
-    public static double[] getXYFromPostalCode(String postalCode) {
+    public static String[] getXYFromPostalCode(String postalCode) {
         String query = String.format("SELECT %s FROM %s WHERE %s = '%s'",
-        "longitude, latitude, postalCode", postedListings, "postalCode", postalCode);
+        "longitude, latitude, Listing.listingId, postalCode", postedListings, "postalCode", postalCode);
 
         ResultSet rs = db.execute(query, null, null).rs;
         try {
             if (rs.next()) {
-                double x = rs.getDouble(1);
-                double y = rs.getDouble(2);
-                return new double[]{x, y};
+                String x = rs.getObject(1).toString();
+                String y = rs.getObject(2).toString();
+                String id = rs.getString(3);
+                return new String[]{x, y, id};
             }
         } catch (SQLException e) {
             // TODO Auto-generated catch block
