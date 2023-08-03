@@ -6,9 +6,9 @@ import java.util.Calendar;
 public class Listing extends DBTable {
 
     public static boolean validateListingId (int listingIdNum) {
-        String query = String.format("SELECT * FROM %s WHERE listingId = %d", 
+        String query = String.format("SELECT * FROM %s WHERE listingId = %d",
             PostingDB, listingIdNum);
-        
+
         QueryResult res = db.execute(query, null, null);
         try {
             if (res.rs.next()) {
@@ -22,10 +22,11 @@ public class Listing extends DBTable {
             return false;
         }
     }
+
     public static boolean validateListingId (int listingIdNum, String hostSin) {
-        String query = String.format("SELECT * FROM %s WHERE listingId = %d AND hostSin = '%s'", 
+        String query = String.format("SELECT * FROM %s WHERE listingId = %d AND hostSin = '%s'",
             PostingDB, listingIdNum, hostSin);
-        
+
         QueryResult res = db.execute(query, null, null);
         try {
             if (res.rs.next()) {
@@ -94,7 +95,7 @@ public class Listing extends DBTable {
         if (available) {
             String bookingQuery = String.format("SELECT * FROM %s WHERE listingId = %d AND startDate <= '%s' AND endDate > '%s' AND bookingStatus = '%s'",
                 BookingDB, listingIdNum, inputs[0], inputs[0], Booking.STATUS_OK);
-                
+
             QueryResult res = db.execute(bookingQuery, null, null);
 
             try {
@@ -123,7 +124,7 @@ public class Listing extends DBTable {
         Integer listingIdNum = Integer.parseInt(listingId);
         if (!validateListingId(listingIdNum)) return;
         if (!validateListingId(listingIdNum, sin)) return;
-        String [] fields = available ? 
+        String [] fields = available ?
             new String[]{"Start of date range to set as available", "End of date range to set as available", "Price"}
             : new String[]{"Start of date range to set as unavailable", "End of date range to set as unavailable"};
         String[] inputs = SQLUtils.getInputArgs(fields);
@@ -140,7 +141,7 @@ public class Listing extends DBTable {
             while (startCalendar.compareTo(endCalendar) < 1) {
                 String dateString = String.format("%4d-%02d-%02d", startCalendar.get(Calendar.YEAR),
                     startCalendar.get(Calendar.MONTH) + 1, startCalendar.get(Calendar.DAY_OF_MONTH));
-    
+
                 if (!available) {
                     if (!Listing.listingIsAvailable(listingIdNum, dateString)) {
                         datesAreAvailable = false;
@@ -150,7 +151,7 @@ public class Listing extends DBTable {
                     if (!Listing.listingIsAvailable(listingIdNum, dateString)) {
                         String bookingQuery = String.format("SELECT * FROM %s WHERE listingId = %d AND startDate <= '%s' AND endDate > '%s' AND bookingStatus = '%s'",
                             BookingDB, listingIdNum, dateString, dateString, Booking.STATUS_OK);
-                            
+
                         QueryResult res = db.execute(bookingQuery, null, null);
 
                         try {
@@ -163,7 +164,7 @@ public class Listing extends DBTable {
                         }
                     }
                 }
-    
+
                 startCalendar.roll(Calendar.DATE, true);
                 if (startCalendar.get(Calendar.DATE) == 1) {
                     startCalendar.roll(Calendar.MONTH, true);
@@ -172,7 +173,7 @@ public class Listing extends DBTable {
                 }
             }
             if (!datesAreAvailable) return;
-            
+
             startCalendar.setTime(startDate);
             endCalendar.setTime(endDate);
 
@@ -205,7 +206,7 @@ public class Listing extends DBTable {
         Integer listingIdNum = Integer.parseInt(listingId);
         String query = String.format("DELETE FROM %s WHERE hostSin = '%s' AND listingId = %d",
             PostingDB, sin, listingIdNum);
-        
+
         QueryResult res = db.executeUpdate(query, null, null);
         if (res.rowsChanged >= 1) {
             System.out.println("Successfully deleted listing " + listingIdNum);
@@ -236,8 +237,8 @@ public class Listing extends DBTable {
                         datesAreAvailable = false;
                         System.out.println("The selected listing is not available for the date " + dateString);
                     }
-                
-    
+
+
                 startCalendar.roll(Calendar.DATE, true);
                 if (startCalendar.get(Calendar.DATE) == 1) {
                     startCalendar.roll(Calendar.MONTH, true);
@@ -246,7 +247,7 @@ public class Listing extends DBTable {
                 }
             }
             if (!datesAreAvailable) return;
-            
+
             startCalendar.setTime(startDate);
             endCalendar.setTime(endDate);
 
@@ -254,11 +255,11 @@ public class Listing extends DBTable {
                 String dateString = String.format("%4d-%02d-%02d", startCalendar.get(Calendar.YEAR),
                     startCalendar.get(Calendar.MONTH) + 1, startCalendar.get(Calendar.DAY_OF_MONTH));
 
- 
+
                 String query = String.format("UPDATE %s SET price = %f WHERE listingId = '%s' AND startDate = '%s'",
                     AvailableDateDB, price, listingIdNum, dateString);
                 db.executeUpdate(query, "Successfully updated price for " + dateString , "Error updating for " + dateString);
-            
+
                 startCalendar.roll(Calendar.DATE, true);
                 if (startCalendar.get(Calendar.DATE) == 1) {
                     startCalendar.roll(Calendar.MONTH, true);

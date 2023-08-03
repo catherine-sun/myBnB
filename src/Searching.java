@@ -4,6 +4,7 @@ import java.util.Scanner;
 public class Searching {
 
     private static String type;
+    private static String sAddr;
     private static String pCode;
     private static String city;
     private static String country;
@@ -12,14 +13,13 @@ public class Searching {
     private static final int edit = 0;
     private static final int apply = 1;
     private static final int clear = 2;
-    private static final int exitSearch = 3;
-    private static final int minimize = 4;
-    private static final int maximize = 5;
-    private static final int togglePriceOrder = 6;
+    private static final int nearby = 3;
+    private static final int exitSearch = 4;
+    private static final int minimize = 5;
+    private static final int maximize = 6;
+    private static final int togglePriceOrder = 7;
 
-    public static void searchAndFilter() {
-        Scanner input = new Scanner(System.in);
-
+    public static void searchAndFilter(Scanner input) {
         ascendingPrice = true;
 
         int choice = maximize;
@@ -43,22 +43,23 @@ public class Searching {
                 case edit:
                     do {
                         System.out.print("1 - Property Type\n"
-                            + "2 - Postal Code\n"
-                            + "3 - City\n"
-                            + "4 - Country\n"
-                            + "5 - Done\n"
+                            + "2 - Street Address\n"
+                            + "3 - Postal Code\n"
+                            + "4 - City\n"
+                            + "5 - Country\n"
+                            + "6 - Done\n"
                             + "Enter the field to update: ");
 
                         choice = input.nextInt();
                         input.nextLine();
 
-                        if (choice < 0 || choice > 4) continue;
+                        if (choice < 0 || choice > 5) continue;
 
-                        fields = new String[]{"Property Type", "Postal Code", "City", "Country", "Done"};
+                        fields = new String[]{"Property Type", "Street Address", "Postal Code", "City", "Country", "Done"};
                         inp = SQLUtils.getInputArgs(new String[] {fields[choice - 1]});
                         updateFilter(fields[choice - 1], inp[0]);
 
-                    } while (choice != 5);
+                    } while (choice != 6);
                     choice = maximize;
                     break;
 
@@ -70,25 +71,31 @@ public class Searching {
                         ArrayList<String> optArr = new ArrayList<>();
 
                         if (type != null) {
-                            opt += String.format ("%d - Property Type\n", i);
+                            opt += i + " - Property Type\n";
                             optArr.add("Property Type");
                             i++;
                         }
 
+                        if (sAddr != null) {
+                            opt += i + " - Street Address\n";
+                            optArr.add("Street Address");
+                            i++;
+                        }
+
                         if (pCode != null) {
-                            opt += String.format ("%d - Postal Code\n", i);
+                            opt += i + " - Postal Code\n";
                             optArr.add("Postal Code");
                             i++;
                         }
 
                         if (city != null) {
-                            opt += String.format ("%d - City\n", i);
+                            opt += i + " - City\n";
                             optArr.add("City");
                             i++;
                         }
 
                         if (country != null) {
-                            opt += String.format ("%d - Country\n", i);
+                            opt += i + " - Country\n";
                             optArr.add("Country");
                             i++;
                         }
@@ -106,6 +113,7 @@ public class Searching {
 
                         if (choice == i - 1) {
                             type = null;
+                            sAddr = null;
                             pCode = null;
                             city = null;
                             country = null;
@@ -118,36 +126,42 @@ public class Searching {
                     choice = maximize;
                     break;
 
+                case nearby:
+                    fields = new String[]{"Postal Code", "Distance"};
+                    inp = SQLUtils.getInputArgs(fields);
+                    Search.searchNearby(inp[0], Double.parseDouble(inp[1]));
+                    break;
+
                 case togglePriceOrder:
                     ascendingPrice = !ascendingPrice;
                     choice = minimize;
 
                 case apply:
-                    display();
+                    Search.searchByAddress(sAddr, pCode, city, country);
                     break;
             }
         }
-
-        // input.close();
     }
 
     public static String getSearchPrompt() {
-        String filter = (type == null && pCode == null && city == null && country == null) ?
+        String filter = "******* Current Filter *******\n"
+            + ((type == null && sAddr == null && pCode == null && city == null && country == null) ?
             "No filter applied\n" :
-            "******* Current Filter *******\n"
-            + (type == null ? "" : " - Type:\t" + type + "\n")
+            (type == null ? "" : " - Type:\t" + type + "\n")
+            + (sAddr == null ? "" : " - Address:\t" + sAddr + "\n")
             + (pCode == null ? "" : " - Postal Code:\t" + pCode + "\n")
             + (city == null ? "" : " - City:\t" + city + "\n")
-            + (country == null ? "" : " - Country:\t" + country + "\n\n");
+            + (country == null ? "" : " - Country:\t" + country + "\n\n"));
 
         return String.format(filter
             + "******* Search Options *******\n"
             + "%2d - Edit filter\n"
             + "%2d - Apply filters\n"
             + "%2d - Clear filters\n"
+            + "%2d - Search nearby\n"
             + "%2d - Exit search\n"
             + "%2d - Minimize search options",
-            edit, apply, clear, exitSearch, minimize);
+            edit, apply, clear, nearby, exitSearch, minimize);
     }
 
     public static String getMinimizedPrompt() {
@@ -160,12 +174,15 @@ public class Searching {
     }
 
     public static void updateFilter(String field, String val) {
-        if (val == "") {
+        if (val.trim().isEmpty()) {
             val = null;
         }
         switch (field) {
             case "Property Type":
                 type = val;
+                break;
+            case "Street Address":
+                sAddr = val;
                 break;
             case "Postal Code":
                 pCode = val;
@@ -186,4 +203,5 @@ public class Searching {
 
         System.out.println(getMinimizedPrompt());
     }
+
 }

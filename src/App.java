@@ -165,7 +165,6 @@ public class App {
             choice = input.nextInt();
             input.nextLine();
 
-
             if ((curMenu == Menu.MAIN && (choice < 1 || choice > 10)) ||
                 ((curMenu == Menu.ACCOUNT && (choice < 11 || choice > 15)) ||
                 (curMenu == Menu.HOST_TOOLKIT && (choice < 16 || choice > 21)))
@@ -205,7 +204,8 @@ public class App {
                     continue;
 
                 case searchListings:
-                    Searching.searchAndFilter();
+                    Searching.searchAndFilter(input);
+                    choice = start;
                     continue;
 
                 case gotoAccount:
