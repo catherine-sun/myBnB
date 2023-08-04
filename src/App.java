@@ -187,8 +187,8 @@ public class App {
                     }
                     fields = new String[]{"Sin Number", "Full Name", "Occupation", "Address", "Date of Birth"};
                     inp = SQLUtils.getInputArgs(fields);
-                    User.createUser(inp[0], inp[1], inp[2], inp[3], inp[4]);
-                    sessionUser = new UserModel(inp[0], inp[1], inp[2], inp[3], Date.valueOf(inp[4]));
+                    if (User.createUser(inp[0], inp[1], inp[2], inp[3], inp[4]))
+                        sessionUser = new UserModel(inp[0], inp[1], inp[2], inp[3], Date.valueOf(inp[4]));
                     continue;
 
                 case searchListings:
