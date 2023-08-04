@@ -12,12 +12,6 @@ public class Searching extends DBTable {
     private static String maxPrice;
     private static boolean ascendingPrice;
 
-// - return all listings in the vicinty of a location ordered by closest (distance, location specified by user)
-// - option to rank listing by ascending or descending price
-// - search by postal code: return all listings in the same and adjacent postal codes
-// - search exact queries (address input, return listing if it exists)
-// - all searches support filters (time, price)
-
     private static final int start = -1;
     private static final int edit = 0;
     private static final int clear = 1;

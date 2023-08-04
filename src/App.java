@@ -249,7 +249,7 @@ public class App {
                     continue;
 
                 case displayUser:
-                    /* TODO */
+                    System.out.println(sessionUser);
                     continue;
 
                 case updateUser:

@@ -30,4 +30,12 @@ public class UserModel {
     public String getOccupation() { return occupation; }
     public String getAddress() { return address; }
     public Date getDateOfBirth() { return dateOfBirth; }
+
+    @Override
+    public String toString() {
+        return String.format("******* " + fullName + "'s Profile *******\n"
+            + "%-16s %-30s\n%-16s %-30s\n%-16s %-30s\n%-16s %-30s",
+            "SIN:", sinNumber, "Occupation:", occupation,
+            "Address:", address, "Date of Birth:", dateOfBirth);
+    }
 }
