@@ -13,8 +13,9 @@ public class Reports extends DBTable {
 		final int findCommercialHosts = 4;
 		final int rankRentersByNumBookings = 5;
 		final int rankUsersByCancellations = 6;
+		final int popularNounPhrases = 7;
 
-		final int exitReport = 7;
+		final int exitReport = 8;
 
 		String reportsPrompt = String.format(
 			"******* Run a report *******\n"
@@ -24,9 +25,10 @@ public class Reports extends DBTable {
 			+ "%2d - Find possible commerical hosts in a specified area\n"
 			+ "%2d - Rank renters by number of bookings within a specified time range\n"
 			+ "%2d - Rank hosts and renters by number of booking cancellations\n"
+			+ "%2d - Find the most popular noun phrase for a listing\n"
 			+ "%2d - Exit reports",
-			numBookingsDateRange, numListingsLocation, rankHostsByNumListings,findCommercialHosts, rankRentersByNumBookings, rankUsersByCancellations,
-			exitReport);
+			numBookingsDateRange, numListingsLocation, rankHostsByNumListings,findCommercialHosts,
+			rankRentersByNumBookings, rankUsersByCancellations, popularNounPhrases, exitReport);
 
 		String numBookingsDateRangePrompt =
 			"******* Find Bookings *******\n"
@@ -53,9 +55,14 @@ public class Reports extends DBTable {
 			+ "2. - In a time period per city\n"
 			+ "3. - Show All (No filter)";
 
-		
 		String findCommercialHostsPrompt =
 			"******* Find Possible Commercial Hosts *******\n"
+			+ "1. - Within a Country\n"
+			+ "2. - Within a Country and City\n"
+			+ "3. - Worldwide (No filter)";
+
+		String popularNounPhrasesPrompt =
+			"******* Find Popular Noun Phrase *******\n"
 			+ "1. - Within a Country\n"
 			+ "2. - Within a Country and City\n"
 			+ "3. - Worldwide (No filter)";
@@ -165,7 +172,17 @@ public class Reports extends DBTable {
 						System.out.println("Invalid choice");
 					}
 					break;
-					
+
+				case popularNounPhrases:
+					System.out.println(popularNounPhrasesPrompt);
+					break;
+
+				case exitReport:
+					break;
+
+				default:
+					System.out.println("Invalid choice");
+
 			}
 		}
 	}
@@ -279,13 +296,13 @@ public class Reports extends DBTable {
 		String startOfYear = String.format("%d-01-01", today.get(Calendar.YEAR));
 		String todayYear = String.format("%d-%02d-%02d", today.get(Calendar.YEAR), today.get(Calendar.MONTH) + 1, today.get(Calendar.DATE));
 		String query = String.format("SELECT fullName, COUNT(*) as count FROM Booking NATURAL JOIN Listing INNER JOIN User ON renterSin = sinNumber WHERE bookingStatus = '%s' AND "
-			+ "renterSin IN (SELECT renterSin FROM Booking WHERE bookingStatus = '%s' AND endDate > '%s' AND startDate <= '%s' ", Booking.STATUS_OK, Booking.STATUS_OK, 
+			+ "renterSin IN (SELECT renterSin FROM Booking WHERE bookingStatus = '%s' AND endDate > '%s' AND startDate <= '%s' ", Booking.STATUS_OK, Booking.STATUS_OK,
 			startOfYear, todayYear);
 
 		if (city != null)
 			query += String.format(" AND city = '%s' GROUP BY renterSin HAVING COUNT(*) >= 2)",
 				startOfYear, todayYear, city);
-		else	
+		else
 			query += " GROUP BY renterSin HAVING COUNT(*) >= 2)";
 
 		if (startDate != null) {
@@ -295,7 +312,7 @@ public class Reports extends DBTable {
 		}
 
 		query += " GROUP BY renterSin ORDER BY COUNT(*) DESC";
-		
+
 		QueryResult res = db.execute(query, null, null);
 
 		try {
@@ -358,9 +375,9 @@ public class Reports extends DBTable {
 			if (i != numFilters - 1) filter += " AND ";
 		}
 		String query = String.format("SELECT hostSin, fullName, COUNT(*) as count, totalCount FROM Posting INNER JOIN Listing ON Posting.listingId = Listing.listingId"
-			+" INNER JOIN User ON hostSin = sinNumber JOIN (SELECT COUNT(*) AS totalCount FROM Listing INNER JOIN Posting ON Posting.listingId = Listing.listingId %s) AS TotalNumListings" 
+			+" INNER JOIN User ON hostSin = sinNumber JOIN (SELECT COUNT(*) AS totalCount FROM Listing INNER JOIN Posting ON Posting.listingId = Listing.listingId %s) AS TotalNumListings"
 			+ " %s GROUP BY hostSin, fullName, totalCount HAVING COUNT(*) > totalCount / 10 ORDER BY COUNT(*) DESC", filter, filter);
-		
+
 		QueryResult res = db.execute(query, null, null);
 
 		try {
@@ -368,7 +385,7 @@ public class Reports extends DBTable {
 				String str = "";
 				for (int num = 1; res.rs.next(); num++){
 					str += num + ". " + res.rs.getString("fullName") + " with " + res.rs.getInt("count") + "/" + res.rs.getInt("totalCount") +" listing(s)\n";
-				} 
+				}
 				printReport(str.trim());
 			}
 		} catch (SQLException e) {
