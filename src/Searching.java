@@ -151,12 +151,12 @@ public class Searching extends DBTable {
                     do {
                         System.out.print("Enter Postal Code: ");
                         inp[0] = input.nextLine().trim().replaceAll("'", "''");
-                    } while (!inp[0].isEmpty());
+                    } while (isNullOrEmpty(inp[0]));
 
                     do {
                         System.out.print("Enter Distance [ENTER to exclude field]: ");
                         inp[1] = input.nextLine().trim().replaceAll("'", "''");
-                    } while (!isNullOrEmpty(inp[1]) || Double.parseDouble(inp[1]) < 0);
+                    } while (!isNullOrEmpty(inp[1]) && Double.parseDouble(inp[1]) < 0);
 
                     searchNearby(inp[0], isNullOrEmpty(inp[1]) ? -1 : Double.parseDouble(inp[1]));
                     break;
