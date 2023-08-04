@@ -185,14 +185,14 @@ public class User extends DBTable {
 // AND tmp.listingId = Booking.listingId AND tmp.startDate = Booking.startDate WHERE Booking.renterSin = '266666662';
 
     private static String displayedFields = "tmp.listingId, "
-        + "listingType, latitude, longitude, streetAddress, postalCode, city, country, "
-        + "bookingStatus, Booking.startDate, endDate, score, commentBody";
+        + "latitude, listingType, longitude, bookingStatus, streetAddress, Booking.startDate, postalCode, "
+        + "endDate, city, score, country";
 
     public static void getRenterHistory(String sin) {
 
         String table = String.format("%s INNER JOIN %s ON %s INNER JOIN %s", BookingDB, ListingDB,
             "Listing.listingId = Booking.listingId",
-            "(SELECT renterSin, listingId, startDate, score, commentBody FROM Rating ORDER BY startDate DESC)"
+            "(SELECT renterSin, listingId, startDate, score FROM Rating ORDER BY startDate DESC)"
             + " AS tmp ON tmp.renterSin = Booking.renterSin AND tmp.listingId = Booking.listingId AND"
             + " tmp.startDate = Booking.startDate");
 
@@ -205,32 +205,34 @@ public class User extends DBTable {
 
     public static void displayRenterHistory(ResultSet rs) {
 
-        String[] fields = new String[]{"ID", "Type", "Latitude", "Longitude", "Address", "Postal code",
-            "City", "Country", "Booking Status", "Start Date", "End Date", " Most Recent Score", "Comment"};
-        String hor = " -------------------------------------";
+        String[] fields = new String[]{"ID:", "Latitude:", "Type:", "Longitude:", "Booking Status:", "Address:", "Start Date:", "Postal code:",
+            "End Date:", "City:", "Latest Rating:", "Country:"};
+        String hor = " " + "-".repeat(98);
         try {
-            if (rs == null || !rs.next()) {
-                System.out.println("Nothing to see");
-                return;
-            }
+        if (rs == null || !rs.next()) {
+            System.out.println("Nothing to see");
+            return;
+        }
 
-            do {
-                System.out.println(hor);
-                for (int i = 0; i < 13; i++) {
-                    if (i >= 11) {
-                        Object obj = rs.getObject(i + 1);
-                        if(obj != null) {
-                            System.out.printf("| %15s: %30s |\n",
-                                fields[i], obj.toString());
-                        }
-                    } else {
-                        System.out.printf("| %15s: %30s |\n",
-                            fields[i], rs.getObject(i + 1).toString());
-                    }
-                }
-            } while (rs.next());
-
+        do {
             System.out.println(hor);
+            for (int i = 0; i < fields.length; i++) {
+                System.out.printf(i%2 == 0 ? "|" : "");
+
+                if (i == 10) {
+                    Object obj = rs.getObject(i + 1);
+                    System.out.printf(" %-16s %-30s ",
+                        fields[i], (obj == null ? "" : obj.toString()));
+                } else {
+                    System.out.printf(" %-16s %-30s ",
+                        fields[i], rs.getObject(i + 1).toString());
+                }
+
+                System.out.printf(i%2 == 1 ? "|\n" : "");
+            }
+        } while (rs.next());
+
+        System.out.println(hor);
 
         } catch (SQLException e) {
             // TODO Auto-generated catch block

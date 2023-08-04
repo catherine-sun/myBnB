@@ -20,8 +20,8 @@ public class Searching extends DBTable {
     private static final int worldwide = 4;
     private static final int exitSearch = 5;
 
-    private static String displayedFields = PostingDB + ".hostSin, " + PostingDB + ".listingId, "
-        + "listingType, latitude, longitude, streetAddress, postalCode, city, country, minPrice, averagePrice, maxPrice";
+    private static String displayedFields = PostingDB + ".hostSin, latitude, " + PostingDB + ".listingId, "
+        + "longitude, listingType, streetAddress, minPrice, postalCode, averagePrice, city, maxPrice, country";
 
     private static String postedListings = PostingDB + " INNER JOIN " + ListingDB
         + " ON " + ListingDB + ".listingId = " + PostingDB + ".listingId";
@@ -346,7 +346,7 @@ public class Searching extends DBTable {
                     if (i == 0) {
                         System.out.printf(" %-16s %-30s ",
                             fields[i], User.getNameBySin(rs.getString(i + 1)));
-                    } else if (i >= 9) {
+                    } else if (i == 6 || i == 8 || i == 10) {
                         String amt = String.format("%.2f", rs.getDouble(i + 1));
                         System.out.printf(" %-16s %-30s ",
                             fields[i], "$" + amt);
