@@ -284,10 +284,6 @@ public class App {
 
                 case rentingHistory:
                     sin = sessionUser.getSinNumber();
-                    // if (!User.isRenter(sin)) {
-                    //     System.out.println("Empty");
-                    //     continue;
-                    // }
                     User.getRenterHistory(sessionUser.getSinNumber());
                     continue;
 

@@ -329,9 +329,9 @@ public class Searching extends DBTable {
 
     public static void displayListings(ResultSet rs) {
 
-        String[] fields = new String[]{"Host", "ID", "Type", "Latitude", "Longitude", "Address", "Postal code",
-            "City", "Country", "Min Price", "Average Price", "Max Price"};
-        String hor = " -------------------------------------";
+        String[] fields = new String[]{"Host:", "Latitude:", "ID:", "Longitude:", "Type:", "Address:", "Min Price:", "Postal code:",
+            "Average Price:", "City:", "Max Price:", "Country:"};
+        String hor = " " + "-".repeat(98);
         try {
             if (rs == null || !rs.next()) {
                 System.out.println("Nothing to see");
@@ -340,18 +340,22 @@ public class Searching extends DBTable {
 
             do {
                 System.out.println(hor);
-                for (int i = 0; i < 12; i++) {
+                for (int i = 0; i < fields.length; i++) {
+                    System.out.printf(i%2 == 0 ? "|" : "");
+
                     if (i == 0) {
-                        System.out.printf("| %13s: %20s |\n",
+                        System.out.printf(" %-16s %-30s ",
                             fields[i], User.getNameBySin(rs.getString(i + 1)));
                     } else if (i >= 9) {
                         String amt = String.format("%.2f", rs.getDouble(i + 1));
-                        System.out.printf("| %13s: %20s |\n",
+                        System.out.printf(" %-16s %-30s ",
                             fields[i], "$" + amt);
                     } else {
-                        System.out.printf("| %13s: %20s |\n",
+                        System.out.printf(" %-16s %-30s ",
                             fields[i], rs.getObject(i + 1).toString());
                     }
+
+                    System.out.printf(i%2 == 1 ? "|\n" : "");
                 }
             } while (rs.next());
 

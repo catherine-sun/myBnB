@@ -220,11 +220,11 @@ public class User extends DBTable {
                     if (i >= 11) {
                         Object obj = rs.getObject(i + 1);
                         if(obj != null) {
-                            System.out.printf("| %13s: %20s |\n",
+                            System.out.printf("| %15s: %30s |\n",
                                 fields[i], obj.toString());
                         }
                     } else {
-                        System.out.printf("| %13s: %20s |\n",
+                        System.out.printf("| %15s: %30s |\n",
                             fields[i], rs.getObject(i + 1).toString());
                     }
                 }
