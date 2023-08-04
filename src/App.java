@@ -283,7 +283,6 @@ public class App {
                     continue;
 
                 case rentingHistory:
-                    sin = sessionUser.getSinNumber();
                     User.getRenterHistory(sessionUser.getSinNumber());
                     continue;
 
@@ -310,7 +309,7 @@ public class App {
 
             switch (choice) {
                 case displayUserListings:
-                    /* TODO */
+                    User.getHostHistory(sessionUser.getSinNumber());
                     continue;
 
                 case updateAvailability:

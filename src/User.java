@@ -184,20 +184,20 @@ public class User extends DBTable {
 // FROM Rating ORDER BY startDate DESC) AS tmp ON tmp.renterSin = Booking.renterSin
 // AND tmp.listingId = Booking.listingId AND tmp.startDate = Booking.startDate WHERE Booking.renterSin = '266666662';
 
-    private static String displayedFields = "tmp.listingId, "
-        + "latitude, listingType, longitude, bookingStatus, streetAddress, Booking.startDate, postalCode, "
-        + "endDate, city, score, country";
 
-    public static void getRenterHistory(String sin) {
+public static void getRenterHistory(String sin) {
+        String displayedFields = "Booking.listingId, "
+            + "latitude, listingType, longitude, bookingStatus, streetAddress, Booking.startDate, postalCode, "
+            + "endDate, city, score, country";
 
-        String table = String.format("%s INNER JOIN %s ON %s INNER JOIN %s", BookingDB, ListingDB,
+        String table = String.format("%s INNER JOIN %s ON %s LEFT JOIN %s", BookingDB, ListingDB,
             "Listing.listingId = Booking.listingId",
             "(SELECT renterSin, listingId, startDate, score FROM Rating ORDER BY startDate DESC)"
             + " AS tmp ON tmp.renterSin = Booking.renterSin AND tmp.listingId = Booking.listingId AND"
             + " tmp.startDate = Booking.startDate");
 
-        String query = String.format("SELECT %s FROM %s WHERE Booking.renterSin = '%s'",
-            displayedFields, table, sin);
+        String query = String.format("SELECT %s FROM %s WHERE Booking.renterSin = '%s' GROUP BY %s",
+            displayedFields, table, sin, displayedFields);
 
         System.out.println(query);
         displayRenterHistory(db.execute(query, null, null).rs);
@@ -222,7 +222,7 @@ public class User extends DBTable {
                 if (i == 10) {
                     Object obj = rs.getObject(i + 1);
                     System.out.printf(" %-16s %-30s ",
-                        fields[i], (obj == null ? "" : obj.toString()));
+                        fields[i], (obj == null ? "" : obj.toString() + "/5"));
                 } else {
                     System.out.printf(" %-16s %-30s ",
                         fields[i], rs.getObject(i + 1).toString());
@@ -238,7 +238,22 @@ public class User extends DBTable {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
+    }
 
+    public static void getHostHistory(String sin) {
+        String displayedFields = PostingDB + ".hostSin, latitude, " + PostingDB + ".listingId, "
+            + "longitude, listingType, streetAddress, minPrice, postalCode, averagePrice, city, maxPrice, country";
+
+        String table = String.format("%s INNER JOIN %s ON %s LEFT JOIN %s", PostingDB, ListingDB,
+            "Listing.listingId = Posting.listingId",
+            "(SELECT listingId, MIN(price) AS minPrice, AVG(price) AS averagePrice, MAX(price) AS maxPrice FROM AvailableDate GROUP BY listingId)"
+            + " AS tmp ON tmp.listingId = Posting.listingId");
+
+        String query = String.format("SELECT %s FROM %s WHERE Posting.hostSin = '%s'",
+            displayedFields, table, sin);
+
+        System.out.println(query);
+        Searching.displayListings(db.execute(query, null, null).rs);
     }
 
     /*CREATE TABLE Renter (
