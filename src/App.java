@@ -13,15 +13,6 @@ public class App {
     };
 
     public static void main(String[] args) throws Exception {
-        NounParser.test("My dog also likes eating sausage.");
-        NounParser.test("The quick brown fox jumped of the lazy dog.");
-        String t = "Joe Smith was born in California. " +
-            "In 2017, he went to Paris, France in the summer. " +
-            "His flight left at 3:00pm on July 10th, 2017. " +
-            "After eating some escargot for the first time, Joe said, \"That was delicious!\" " +
-            "He sent a postcard to his sister Jane Smith. " +
-            "After hearing about Joe's trip, Jane decided she might go to France one day.";
-        NounParser.test(t);
         Scanner input = new Scanner(System.in);
         DBConnection db = new DBConnection();
 
@@ -44,28 +35,6 @@ public class App {
             } while (pwd.length() == 0);
 
         } while (!db.connect(dbName, usr, pwd));
-
-        /*
-        * add a new profile
-        * edit profile
-        * delete profile
-        * add payment info
-        * view renting history
-        * view future bookings
-        * view listings
-        * view rental history of each listing
-        *
-        * add a new listing
-        * edit a listing
-        * update availability of listing (unless its booked)
-        * update price of a listing (during a given time range, notify host if they cannot change)
-        * remove a listing
-        *
-        * book a listing
-        * cancel a booking (record if its been canceled)
-        *
-        * rate and comment (listing, renter, hoster)
-        */
 
         /* Commands */
         final int start = 0;

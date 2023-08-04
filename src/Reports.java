@@ -1,5 +1,8 @@
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Enumeration;
+import java.util.Hashtable;
 import java.util.Scanner;
 
 public class Reports extends DBTable {
@@ -62,10 +65,7 @@ public class Reports extends DBTable {
 			+ "3. - Worldwide (No filter)";
 
 		String popularNounPhrasesPrompt =
-			"******* Find Popular Noun Phrase *******\n"
-			+ "1. - Within a Country\n"
-			+ "2. - Within a Country and City\n"
-			+ "3. - Worldwide (No filter)";
+			"******* Find Popular Noun Phrase *******";
 
 		String[] fields, inp;
 		int choice = numBookingsDateRange, reportChoice;
@@ -175,6 +175,7 @@ public class Reports extends DBTable {
 
 				case popularNounPhrases:
 					System.out.println(popularNounPhrasesPrompt);
+					getPopularNounPhrases();
 					break;
 
 				case exitReport:
@@ -391,5 +392,47 @@ public class Reports extends DBTable {
 		} catch (SQLException e) {
 			System.out.println(e.getMessage());
 		}
+	}
+
+	public static void getPopularNounPhrases() {
+
+		String query = "SELECT commentBody, listingId FROM Rating WHERE commentBody IS NOT NULL";
+
+		QueryResult res = db.execute(query, null, null);
+
+		try {
+			Hashtable<String, String> texts = new Hashtable<>();
+			ArrayList<NPhrase> nPhrases = new ArrayList<>();
+
+			String id;
+			while (res.rs.next()) {
+				id = res.rs.getString("listingId");
+				if (texts.containsKey(id)) {
+					texts.replace(id, res.rs.getString("commentBody") + ". ");
+				} else {
+					texts.put(id, res.rs.getString("commentBody") + ". ");
+				}
+			}
+
+			Enumeration<String> k = texts.keys();
+			while (k.hasMoreElements()) {
+				String key = k.nextElement();
+
+				nPhrases = NpParser.parseNounPhrase(texts.get(key));
+				nPhrases.sort(null);
+				System.out.printf("\n%-10s %-40s\n", "Frequency", "Popular noun phrase from listing " + key);
+				System.out.println("-".repeat(48));
+
+				for (NPhrase np : nPhrases) {
+					System.out.printf("%-10d %-40s\n", np.getCount(), np.getNPhrase());
+				}
+				System.out.println();
+			}
+
+
+		} catch (SQLException e) {
+			System.out.println(e.getMessage());
+		}
+
 	}
 }

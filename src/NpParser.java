@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.Properties;
 import edu.stanford.nlp.pipeline.CoreDocument;
 import edu.stanford.nlp.pipeline.CoreSentence;
@@ -9,7 +10,7 @@ import edu.stanford.nlp.ling.IndexedWord;
 
 public class NpParser {
 
-    public static void test(String text) {
+    public static ArrayList<NPhrase> parseNounPhrase(String text) {
         // set list of annotators to run
         Properties prop = PropertiesUtils.asProperties("annotators", "tokenize, ssplit, pos, lemma, parse");
         // build pipeline
@@ -18,6 +19,8 @@ public class NpParser {
         CoreDocument document = new CoreDocument(text);
         //annotate the document
         pipeline.annotate(document);
+
+        ArrayList<NPhrase> nPhrases = new ArrayList<>();
 
         // iterate through sentences
         for (CoreSentence sentence : document.sentences()) {
@@ -31,19 +34,28 @@ public class NpParser {
 
                     // get leaf for the noun
                     Tree npTree = tree.getLeaves().get(i.index() - 1);
-                    npTree = getNounPhrase(npTree, tree);
-                    System.out.println(npTree);
+                    String nPhrase = getNounPhrase(npTree, tree);
+
+                    NPhrase np = new NPhrase(nPhrase, 1);
+                    if (nPhrases.contains(np)) {
+                        nPhrases.get(nPhrases.indexOf(np)).incrementCount();
+                    } else {
+                        nPhrases.add(np);
+                    }
                 }
             }
         }
+
+        return nPhrases;
     }
 
-    private static Tree getNounPhrase(Tree npTree, Tree tree) {
+
+    private static String getNounPhrase(Tree npTree, Tree tree) {
         if (npTree == null) {
-            return npTree;
+            return "";
         }
         if (npTree.label().value().startsWith("NP")) {
-            return npTree;
+            return npTree.spanString();
         }
         return getNounPhrase(npTree.parent(tree), tree);
     }
