@@ -10,20 +10,22 @@ public class Reports extends DBTable {
 		final int numBookingsDateRange = 1;
 		final int numListingsLocation = 2;
 		final int rankHostsByNumListings = 3;
-		final int rankRentersByNumBookings = 4;
-		final int rankUsersByCancellations = 5;
+		final int findCommercialHosts = 4;
+		final int rankRentersByNumBookings = 5;
+		final int rankUsersByCancellations = 6;
 
-		final int exitReport = 6;
+		final int exitReport = 7;
 
 		String reportsPrompt = String.format(
 			"******* Run a report *******\n"
 			+ "%2d - Total number of bookings for a specified date range\n"
 			+ "%2d - Total number of listings in a specified area\n"
 			+ "%2d - Rank hosts by number of listings in a specified area\n"
+			+ "%2d - Find possible commerical hosts in a specified area\n"
 			+ "%2d - Rank renters by number of bookings within a specified time range\n"
 			+ "%2d - Rank hosts and renters by number of booking cancellations\n"
 			+ "%2d - Exit reports",
-			numBookingsDateRange, numListingsLocation, rankHostsByNumListings, rankRentersByNumBookings, rankUsersByCancellations,
+			numBookingsDateRange, numListingsLocation, rankHostsByNumListings,findCommercialHosts, rankRentersByNumBookings, rankUsersByCancellations,
 			exitReport);
 
 		String numBookingsDateRangePrompt =
@@ -50,6 +52,13 @@ public class Reports extends DBTable {
 			+ "1. - In a time period\n"
 			+ "2. - In a time period per city\n"
 			+ "3. - Show All (No filter)";
+
+		
+		String findCommercialHostsPrompt =
+			"******* Find Possible Commercial Hosts *******\n"
+			+ "1. - Within a Country\n"
+			+ "2. - Within a Country and City\n"
+			+ "3. - Worldwide (No filter)";
 
 		String[] fields, inp;
 		int choice = numBookingsDateRange, reportChoice;
@@ -138,6 +147,25 @@ public class Reports extends DBTable {
 				case rankUsersByCancellations:
 					rankUsersByCancellations();
 					break;
+
+				case findCommercialHosts:
+					System.out.println(findCommercialHostsPrompt);
+					System.out.print(": ");
+					reportChoice = input.nextInt();
+					input.nextLine();
+					if (reportChoice == 3) {
+						findPossibleCommercialHosts(new String[]{}, 0);
+					} else if (reportChoice <= 2 && reportChoice >= 1) {
+						fields = new String[] {"Country", "City"};
+						inp = new String[reportChoice];
+						System.arraycopy(fields, 0, inp, 0, reportChoice);
+						inp = SQLUtils.getInputArgs(inp);
+						findPossibleCommercialHosts(inp, reportChoice);
+					} else {
+						System.out.println("Invalid choice");
+					}
+					break;
+					
 			}
 		}
 	}
@@ -247,7 +275,18 @@ public class Reports extends DBTable {
 
 	public static void rankRentersByBooking (String startDate, String endDate, String city) {
 
-		String query = String.format("SELECT fullName, COUNT(*) as count FROM Booking NATURAL JOIN Listing INNER JOIN User ON renterSin = sinNumber WHERE bookingStatus = '%s'", Booking.STATUS_OK);
+		Calendar today = Calendar.getInstance();
+		String startOfYear = String.format("%d-01-01", today.get(Calendar.YEAR));
+		String todayYear = String.format("%d-%02d-%02d", today.get(Calendar.YEAR), today.get(Calendar.MONTH) + 1, today.get(Calendar.DATE));
+		String query = String.format("SELECT fullName, COUNT(*) as count FROM Booking NATURAL JOIN Listing INNER JOIN User ON renterSin = sinNumber WHERE bookingStatus = '%s' AND "
+			+ "renterSin IN (SELECT renterSin FROM Booking WHERE bookingStatus = '%s' AND endDate > '%s' AND startDate <= '%s' ", Booking.STATUS_OK, Booking.STATUS_OK, 
+			startOfYear, todayYear);
+
+		if (city != null)
+			query += String.format(" AND city = '%s' GROUP BY renterSin HAVING COUNT(*) >= 2)",
+				startOfYear, todayYear, city);
+		else	
+			query += " GROUP BY renterSin HAVING COUNT(*) >= 2)";
 
 		if (startDate != null) {
 			query += String.format(" AND ((startDate <= '%s' AND endDate > '%s') OR (startDate <= '%s' AND endDate > '%s') " +
@@ -255,16 +294,8 @@ public class Reports extends DBTable {
 				startDate, endDate, startDate, startDate, startDate, endDate, endDate, endDate);
 		}
 
-		if (city != null) {
-			Calendar today = Calendar.getInstance();
-			String startOfYear = String.format("%d-01-01", today.get(Calendar.YEAR));
-			String todayYear = String.format("%d-%02d-%02d", today.get(Calendar.YEAR), today.get(Calendar.MONTH) + 1, today.get(Calendar.DATE));
-			query += String.format("AND endDate >= '%s' AND startDate <= '%s' AND city = '%s' GROUP BY renterSin HAVING COUNT(*) >= 2 ORDER BY COUNT(*) DESC",
-				startOfYear, todayYear, city);
-		} else {
-			query += " GROUP BY renterSin ORDER BY COUNT(*) DESC";
-		}
-
+		query += " GROUP BY renterSin ORDER BY COUNT(*) DESC";
+		
 		QueryResult res = db.execute(query, null, null);
 
 		try {
@@ -314,6 +345,32 @@ public class Reports extends DBTable {
 			}
 			printReport(str.trim());
 
+		} catch (SQLException e) {
+			System.out.println(e.getMessage());
+		}
+	}
+
+	public static void findPossibleCommercialHosts (String [] filterInputs, int numFilters) {
+		String[] filters = new String[] {"Country", "City"};
+		String filter = numFilters > 0 ? "WHERE " : "";
+		for (int i = 0; i < numFilters; i++) {
+			filter += filters[0] + " = '" + filterInputs[0] +"'";
+			if (i != numFilters - 1) filter += " AND ";
+		}
+		String query = String.format("SELECT hostSin, fullName, COUNT(*) as count, totalCount FROM Posting INNER JOIN Listing ON Posting.listingId = Listing.listingId"
+			+" INNER JOIN User ON hostSin = sinNumber JOIN (SELECT COUNT(*) AS totalCount FROM Listing INNER JOIN Posting ON Posting.listingId = Listing.listingId %s) AS TotalNumListings" 
+			+ " %s GROUP BY hostSin, fullName, totalCount HAVING COUNT(*) > totalCount / 10 ORDER BY COUNT(*) DESC", filter, filter);
+		
+		QueryResult res = db.execute(query, null, null);
+
+		try {
+			if (res.rs != null) {
+				String str = "";
+				for (int num = 1; res.rs.next(); num++){
+					str += num + ". " + res.rs.getString("fullName") + " with " + res.rs.getInt("count") + "/" + res.rs.getInt("totalCount") +" listing(s)\n";
+				} 
+				printReport(str.trim());
+			}
 		} catch (SQLException e) {
 			System.out.println(e.getMessage());
 		}

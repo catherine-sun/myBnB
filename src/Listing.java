@@ -2,9 +2,16 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Date;
 import java.util.Calendar;
+import java.util.Scanner;
 
 public class Listing extends DBTable {
 
+    public static final String[] amenities = new String[]{
+        "Wifi", "Kitchen", "Washer", "Dryer", "Air conditioning", "Heating", "Dedicated workspace", "TV", "Hair dryer", "Iron", // Essentials
+        "Pool", "Hot tub", "Free parking", "EV Charger", "Crib", "Gym", "BBQ grill", "Breakfast", "Indoor fireplace", "Smoking allowed", // Features
+        "Beachfront", "Waterfront", // Location
+        "Smoke alarm", "Carbon monoxide alarm" // Safety
+    };
     public static boolean validateListingId (int listingIdNum) {
         String query = String.format("SELECT * FROM %s WHERE listingId = %d",
             PostingDB, listingIdNum);
@@ -60,6 +67,7 @@ public class Listing extends DBTable {
             System.out.println("The listing's id is " + listingId);
         } catch (SQLException e) {
             System.out.println("Error fetching the listing id: " + e.getMessage());
+            return;
         }
 
         query = String.format("INSERT INTO %s (%s) VALUES (%s, '%s')",
@@ -82,6 +90,46 @@ public class Listing extends DBTable {
             System.out.println(e.getMessage());
         }
 
+        double suggestedPrice = getSuggestedListingPrice(country, city);
+        if (suggestedPrice >= 0) {
+            System.out.println("The suggested listing price for this area is $" + suggestedPrice);
+        } else {
+            System.out.println("There are not enough listings in this area to calculate a suggested base price");
+        }
+
+        if (!dev) {
+            selectAmenities(listingId);
+        }
+    }
+
+    public static void selectAmenities (int listingId) {
+        Scanner input = new Scanner(System.in);
+        String str = "\n";
+        double price;
+        for (int i = 0; i < amenities.length; i++) {
+            str += String.format("%2d. %s %s\n", i + 1, amenities[i], 
+            (price = getSuggestedAmenityPrice(amenities[i])) > 0 ? "(Suggested additional price: " + price + ")" : "");
+        }
+        str += String.format("%2d. Continue\n", amenities.length + 1);
+        int choice = 0;
+        do {
+            System.out.println(str);
+            System.out.println("Enter the amenity provided by this listing (type in comma-separated list of numbers):");
+            System.out.print(":");
+            choice = input.nextInt();
+            input.nextLine();
+            if (choice >= 1 && choice <= amenities.length) {
+                System.out.println("Enter the price of the amenity:");
+                System.out.print(":");
+                price = input.nextDouble();
+                input.nextLine();
+                String query = String.format("INSERT INTO ProvidedAmenity (itemId, listingId, price) VALUES (%d, %d, %f)",
+                    choice, listingId, price);
+                db.executeUpdate(query, "Successfully added " + amenities[choice - 1] + " with a price of " + price, "Error adding amenity");
+            } else if (choice != amenities.length + 1) {
+                System.out.println("Invalid choice");
+            }
+        } while (choice != amenities.length + 1);
     }
 
     public static void setAvailableDateSingle (String sin, String listingId, boolean available)
@@ -278,5 +326,45 @@ public class Listing extends DBTable {
         QueryResult res = db.execute(query, null, null);
 
         return SQLUtils.resultSetIsEmpty(res.rs);
+    }
+
+    public static double getSuggestedListingPrice (String country, String city) {
+        double price = -1;
+
+        String query = String.format("SELECT AVG(averagePrice) as price FROM Posting INNER JOIN Listing on Posting.listingId = Listing.listingId INNER JOIN " +
+            "(SELECT listingId, AVG(price) as averagePrice FROM AvailableDate GROUP BY listingId) as AveragePerListing ON Listing.listingId = AveragePerListing.listingId" + 
+            " WHERE Country = '%s' AND City = '%s'", country, city);
+
+        QueryResult res = db.execute(query, null, null);
+
+        try {
+            if (res.rs != null) {
+                if (res.rs.next()) {
+                    price = res.rs.getDouble("price");
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        return price;
+    }
+
+    public static double getSuggestedAmenityPrice (String name) {
+        double price = -1;
+
+        String query = String.format("SELECT AVG(price) as price FROM ProvidedAmenity INNER JOIN Amenity ON ProvidedAmenity.itemId = Amenity.itemId WHERE amenityName = '%s'", name);
+
+        QueryResult res = db.execute(query, null, null);
+
+        try {
+            if (res.rs != null) {
+                if (res.rs.next()) {
+                    price = res.rs.getDouble("price");
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        return price;
     }
 }
