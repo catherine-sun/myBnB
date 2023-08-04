@@ -110,13 +110,14 @@ public class User extends DBTable {
     }
 
     public static void addPaymentInfo (String sin, String info) {
-        
+
         String query = String.format("UPDATE %s SET paymentInfo = '%s' WHERE sinNumber = '%s'",
             RenterDB, info, sin);
-        
+
         db.executeUpdate(query, "Successfully updated payment info", "Error updating payment info");
 
     }
+
     /*CREATE TABLE Renter (
         sin CHAR(9) PRIMARY KEY,
         paymentInfo VARCHAR(30),
