@@ -312,6 +312,7 @@ public class App {
 
             switch (choice) {
                 case displayUserListings:
+                    User.getRentHistory(sessionUser.getSinNumber());
                     continue;
 
                 case updateAvailability:

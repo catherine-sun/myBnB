@@ -17,7 +17,8 @@ public class Searching extends DBTable {
     private static final int clear = 1;
     private static final int exact = 2;
     private static final int nearby = 3;
-    private static final int exitSearch = 4;
+    private static final int worldwide = 4;
+    private static final int exitSearch = 5;
 
     private static String displayedFields = PostingDB + ".hostSin, " + PostingDB + ".listingId, "
         + "listingType, latitude, longitude, streetAddress, postalCode, city, country, minPrice, averagePrice, maxPrice";
@@ -146,9 +147,22 @@ public class Searching extends DBTable {
                     break;
 
                 case nearby:
-                    fields = new String[]{"Postal Code", "Distance"};
-                    inp = SQLUtils.getInputArgs(fields);
-                    searchNearby(inp[0], Double.parseDouble(inp[1]));
+                    inp = new String[2];
+                    do {
+                        System.out.print("Enter Postal Code: ");
+                        inp[0] = input.nextLine().trim().replaceAll("'", "''");
+                    } while (!inp[0].isEmpty());
+
+                    do {
+                        System.out.print("Enter Distance [ENTER to exclude field]: ");
+                        inp[1] = input.nextLine().trim().replaceAll("'", "''");
+                    } while (!isNullOrEmpty(inp[1]) || Double.parseDouble(inp[1]) < 0);
+
+                    searchNearby(inp[0], isNullOrEmpty(inp[1]) ? -1 : Double.parseDouble(inp[1]));
+                    break;
+
+                case worldwide:
+                    searchByAddress(null, null, null, null);
                     break;
 
                 case exitSearch:
@@ -175,8 +189,9 @@ public class Searching extends DBTable {
             + "%2d - Clear filters\n"
             + "%2d - Search exact destination\n"
             + "%2d - Search nearby postal codes\n"
+            + "%2d - Search world wide\n"
             + "%2d - Exit search",
-            edit, clear, exact, nearby, exitSearch);
+            edit, clear, exact, nearby, worldwide, exitSearch);
     }
 
     public static void updateFilter(String field, String val) {
@@ -227,10 +242,8 @@ public class Searching extends DBTable {
             filter = "WHERE " + filter;
         }
 
-        filter += "ORDER BY averagePrice " + (ascendingPrice ? "ASC" : "DESC");
-
-        String query = String.format("SELECT %s FROM %s GROUP BY %s %s",
-            displayedFields, postedListings + availableListings(), displayedFields, filter);
+        String query = String.format("SELECT %s FROM %s %s GROUP BY %s ORDER BY %s",
+            displayedFields, postedListings + availableListings(), filter, displayedFields, "averagePrice " + (ascendingPrice ? "ASC" : "DESC"));
 
         System.out.println(query);
         ResultSet rs = db.execute(query, null, null).rs;
@@ -247,10 +260,11 @@ public class Searching extends DBTable {
         }
 
         String distance = "SQRT(POWER(longitude - " + d[0] + ", 2) +  POWER(latitude - " + d[1] + ", 2))";
-        String filter = isNullOrEmpty(listingType) ? "" : " AND listingType = '" + listingType + "'";
+        String filter = (radius < 0 ? "" : " AND " + distance + " <= " + radius)
+            + (isNullOrEmpty(listingType) ? "" : " AND listingType = '" + listingType + "'");
 
-        String query = String.format("SELECT %s FROM %s WHERE %s != '%s' AND %s <= %f %s GROUP BY %s ORDER BY averagePrice %s, %s ASC",
-            displayedFields + ", " + distance + " AS distance", postedListings + availableListings(), ListingDB + ".listingId", d[2], distance, radius, filter, displayedFields, (ascendingPrice ? "ASC" : "DESC"),"10");
+        String query = String.format("SELECT %s FROM %s WHERE %s != '%s' %s GROUP BY %s ORDER BY averagePrice %s, %s ASC",
+            displayedFields + ", " + distance + " AS distance", postedListings + availableListings(), ListingDB + ".listingId", d[2], filter, displayedFields, (ascendingPrice ? "ASC" : "DESC"),"10");
 
         System.out.println(query);
         ResultSet rs = db.execute(query, null, null).rs;
@@ -300,14 +314,6 @@ public class Searching extends DBTable {
         }
 
         return String.format(" INNER JOIN (SELECT listingId, MIN(price) AS minPrice, AVG(price) AS averagePrice, MAX(price) AS maxPrice FROM AvailableDate %s GROUP BY listingId) AS tmp ON tmp.listingId = Posting.listingId", filter);
-    }
-
-
-    public static void getRentHistory(String sin) {
-
-        // String query = String.format("SELECT %s FROM %s",
-        //     displayedFields, RenterDB);
-
     }
 
 // CREATE TABLE Listing (
