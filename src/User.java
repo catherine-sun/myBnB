@@ -2,6 +2,7 @@ import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Calendar;
+import java.util.List;
 
 
 public class User extends DBTable {
@@ -164,13 +165,77 @@ public class User extends DBTable {
 // 	CHECK (startDate <= endDate)
 // );
 
+// CREATE TABLE Rating (
+// 	authorSin CHAR(9),
+// 	renterSin CHAR(9),
+// 	listingId INTEGER,
+// 	startDate DATE,
+// 	commentBody TEXT,
+// 	score INTEGER CHECK (score >= 1 AND score <= 5) NOT NULL,
+// 	object VARCHAR(30),
+// 	PRIMARY KEY (authorSin, renterSin, listingId, startDate, object),
+// 	FOREIGN KEY (renterSin) REFERENCES User(sinNumber) ON DELETE CASCADE ON UPDATE CASCADE,
+// 	FOREIGN KEY (listingId) REFERENCES Listing(listingId) ON DELETE CASCADE ON UPDATE CASCADE,
+// 	FOREIGN KEY (renterSin, listingId, startDate) REFERENCES Booking(renterSin, listingId, startDate) ON DELETE CASCADE ON UPDATE CASCADE
+// );
 
-    public static void getRentHistory(String sin) {
+// SELECT bookingStatus, Booking.startDate, endDate, score, commentBody FROM
+// Booking INNER JOIN (SELECT renterSin, listingId, startDate, score, commentBody
+// FROM Rating ORDER BY startDate DESC) AS tmp ON tmp.renterSin = Booking.renterSin
+// AND tmp.listingId = Booking.listingId AND tmp.startDate = Booking.startDate WHERE Booking.renterSin = '266666662';
 
-        String displayedFields = "bookingStatus, startDate, endDate, ";
+    private static String displayedFields = "tmp.listingId, "
+        + "listingType, latitude, longitude, streetAddress, postalCode, city, country, "
+        + "bookingStatus, Booking.startDate, endDate, score, commentBody";
 
-        String query = String.format("SELECT %s FROM %s",
-            displayedFields, RenterDB + " INNER JOIN " + BookingDB);
+    public static void getRenterHistory(String sin) {
+
+        String table = String.format("%s INNER JOIN %s ON %s INNER JOIN %s", BookingDB, ListingDB,
+            "Listing.listingId = Booking.listingId",
+            "(SELECT renterSin, listingId, startDate, score, commentBody FROM Rating ORDER BY startDate DESC)"
+            + " AS tmp ON tmp.renterSin = Booking.renterSin AND tmp.listingId = Booking.listingId AND"
+            + " tmp.startDate = Booking.startDate");
+
+        String query = String.format("SELECT %s FROM %s WHERE Booking.renterSin = '%s'",
+            displayedFields, table, sin);
+
+        System.out.println(query);
+        displayRenterHistory(db.execute(query, null, null).rs);
+    }
+
+    public static void displayRenterHistory(ResultSet rs) {
+
+        String[] fields = new String[]{"ID", "Type", "Latitude", "Longitude", "Address", "Postal code",
+            "City", "Country", "Booking Status", "Start Date", "End Date", " Most Recent Score", "Comment"};
+        String hor = " -------------------------------------";
+        try {
+            if (rs == null || !rs.next()) {
+                System.out.println("Nothing to see");
+                return;
+            }
+
+            do {
+                System.out.println(hor);
+                for (int i = 0; i < 13; i++) {
+                    if (i >= 11) {
+                        Object obj = rs.getObject(i + 1);
+                        if(obj != null) {
+                            System.out.printf("| %13s: %20s |\n",
+                                fields[i], obj.toString());
+                        }
+                    } else {
+                        System.out.printf("| %13s: %20s |\n",
+                            fields[i], rs.getObject(i + 1).toString());
+                    }
+                }
+            } while (rs.next());
+
+            System.out.println(hor);
+
+        } catch (SQLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
 
     }
 

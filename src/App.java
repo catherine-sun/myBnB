@@ -284,9 +284,11 @@ public class App {
 
                 case rentingHistory:
                     sin = sessionUser.getSinNumber();
-                    if (!User.isRenter(sin)) {
-                        System.out.println("Empty");
-                    }
+                    // if (!User.isRenter(sin)) {
+                    //     System.out.println("Empty");
+                    //     continue;
+                    // }
+                    User.getRenterHistory(sessionUser.getSinNumber());
                     continue;
 
                 case deleteUser:
@@ -312,7 +314,7 @@ public class App {
 
             switch (choice) {
                 case displayUserListings:
-                    User.getRentHistory(sessionUser.getSinNumber());
+                    /* TODO */
                     continue;
 
                 case updateAvailability:
