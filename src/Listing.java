@@ -113,29 +113,37 @@ public class Listing extends DBTable {
         do {
             String str = "\n";
             double price;
+            System.out.printf("\n%28s %-20s", "", "Suggested additional price");
             for (int i = 0; i < amenities.length; i++) {
                 if (!selectedChoices.contains(Integer.valueOf(i + 1))) {
-                    str += String.format("%2d. %s %s\n", i + 1, amenities[i], 
-                    (price = getSuggestedAmenityPrice(amenities[i])) > 0 ? "(Suggested additional price: " + price + ")" : "");
+                    str += String.format("%2d. %-30s %20s\n", i + 1, amenities[i],
+                    (price = getSuggestedAmenityPrice(amenities[i])) > 0 ? "$" + Math.round(price*100)/100.00 : "-");
                 }
             }
-            str += String.format("%2d. Continue\n", amenities.length + 1);
+            str += String.format("%2d. Done\n", amenities.length + 1);
             System.out.println(str);
             System.out.println("Enter the amenity provided by this listing (type in comma-separated list of numbers):");
-            System.out.print(":");
-            choice = input.nextInt();
-            input.nextLine();
-            if (choice >= 1 && choice <= amenities.length) {
-                System.out.println("Enter the price of the amenity:");
-                System.out.print(":");
-                price = input.nextDouble();
-                input.nextLine();
-                String query = String.format("INSERT INTO ProvidedAmenity (itemId, listingId, price) VALUES (%d, %d, %f)",
-                    choice, listingId, price);
-                db.executeUpdate(query, "Successfully added " + amenities[choice - 1] + " with a price of " + price, "Error adding amenity");
-                selectedChoices.add(Integer.valueOf(choice));
-            } else if (choice != amenities.length + 1) {
-                System.out.println("Invalid choice");
+            System.out.print(": ");
+
+            String[] inp = input.nextLine().replaceAll(" ", "").split(",");
+            for (String s : inp) {
+                choice = Integer.parseInt(s);
+                if (selectedChoices.contains(choice)) {
+                    System.out.println(amenities[choice - 1] + " already added");
+                    continue;
+                }
+                if (choice >= 1 && choice <= amenities.length) {
+                    System.out.println("Enter the price of the amenity:");
+                    System.out.print(": ");
+                    price = input.nextDouble();
+                    input.nextLine();
+                    String query = String.format("INSERT INTO ProvidedAmenity (itemId, listingId, price) VALUES (%d, %d, %f)",
+                        choice, listingId, price);
+                    db.executeUpdate(query, "Successfully added " + amenities[choice - 1] + " with a price of " + price, "Error adding amenity");
+                    selectedChoices.add(Integer.valueOf(choice));
+                } else if (choice != amenities.length + 1) {
+                    System.out.println("Invalid choice");
+                }
             }
         } while (choice != amenities.length + 1);
     }
@@ -340,7 +348,7 @@ public class Listing extends DBTable {
         double price = -1;
 
         String query = String.format("SELECT AVG(averagePrice) as price FROM Posting INNER JOIN Listing on Posting.listingId = Listing.listingId INNER JOIN " +
-            "(SELECT listingId, AVG(price) as averagePrice FROM AvailableDate GROUP BY listingId) as AveragePerListing ON Listing.listingId = AveragePerListing.listingId" + 
+            "(SELECT listingId, AVG(price) as averagePrice FROM AvailableDate GROUP BY listingId) as AveragePerListing ON Listing.listingId = AveragePerListing.listingId" +
             " WHERE Country = '%s' AND City = '%s'", country, city);
 
         QueryResult res = db.execute(query, null, null);
