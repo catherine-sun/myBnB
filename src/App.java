@@ -2,6 +2,12 @@ import java.sql.Date;
 import java.util.Scanner;
 
 public class App {
+
+    public enum Option {
+        LOVE,
+        HATE,
+        IN_BETWEEN
+    }
     public static void main(String[] args) throws Exception {
         Scanner input = new Scanner(System.in);
         System.out.println("Hello, World!");
@@ -13,6 +19,11 @@ public class App {
         listing.setConnection(db);
         int cmd;
         boolean running = true;
+        
+        System.out.println("LOVE is " + Option.LOVE.ordinal());
+        System.out.println("HATE is " + Option.HATE.ordinal());
+        System.out.println("IN_BETWEEN is " + Option.IN_BETWEEN.ordinal());
+        System.out.println("HATE == 1 =");
 
         while (running) {
             System.out.println("Enter command: ");
@@ -71,6 +82,16 @@ public class App {
                     listing.createListing(inputs[0], inputs[1], inputs[2], inputs[3], inputs[4], inputs[5], inputs[6], inputs[7]);
                     break;
                 case 5:
+                    fields = new String[] {"Your Sin Number", "Listing Id"};
+                    inputs = SQLUtils.getInputArgs(fields);
+                    listing.setAvailableDateSingle(inputs[1]);
+                    break;
+                case 6:
+                    fields = new String[] {"Your Sin Number", "Listing Id"};
+                    inputs = SQLUtils.getInputArgs(fields);
+                    listing.setAvailableDateRange(inputs[1]);
+                    break;     
+
             }
         }
         input.close();
