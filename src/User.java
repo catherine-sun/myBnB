@@ -131,6 +131,26 @@ public class User extends DBTable {
     }
 
 
+    public static String getNameBySin(String sin) {
+
+        String query = String.format("SELECT %s FROM %s WHERE sinNumber = '%s'",
+            "fullName", UserDB, sin);
+
+        ResultSet rs = db.execute(query, null, null).rs;
+
+        try {
+            if (rs.next()) {
+                return rs.getString("fullName");
+            }
+        } catch (SQLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+
 // CREATE TABLE Booking (
 // 	listingId INTEGER,
 // 	renterSin CHAR(9),

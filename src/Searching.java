@@ -341,7 +341,10 @@ public class Searching extends DBTable {
             do {
                 System.out.println(hor);
                 for (int i = 0; i < 12; i++) {
-                    if (i >= 9) {
+                    if (i == 0) {
+                        System.out.printf("| %13s: %20s |\n",
+                            fields[i], User.getNameBySin(rs.getString(i + 1)));
+                    } else if (i >= 9) {
                         String amt = String.format("%.2f", rs.getDouble(i + 1));
                         System.out.printf("| %13s: %20s |\n",
                             fields[i], "$" + amt);
