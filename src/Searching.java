@@ -406,7 +406,7 @@ public class Searching extends DBTable {
             System.out.println(hor);
 
         } catch (SQLException e) {
-=            e.printStackTrace();
+            e.printStackTrace();
         }
     }
 

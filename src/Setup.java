@@ -213,23 +213,23 @@ public class Setup {
         startCalendar.setTime(Date.valueOf(start));
         endCalendar.setTime(Date.valueOf(end));
 
-        while (startCalendar.compareTo(endCalendar) < 0) {
-            String dateString = String.format("%d-%02d-%02d", startCalendar.get(Calendar.YEAR),
-            startCalendar.get(Calendar.MONTH) + 1, startCalendar.get(Calendar.DAY_OF_MONTH));
+         while (startCalendar.compareTo(endCalendar) < 0) {
+             String dateString = String.format("%d-%02d-%02d", startCalendar.get(Calendar.YEAR),
+             startCalendar.get(Calendar.MONTH) + 1, startCalendar.get(Calendar.DAY_OF_MONTH));
 
-            for (int i = 1; i < 100; i++) {
-                String query = String.format("INSERT INTO %s (%s) VALUES (%d, '%s', %f)",
-                    DBTable.AvailableDateDB, "listingId, startDate, price",  i, dateString, (double) Math.round(Math.random() * 17000) / 100 + 40);
-                System.out.println(query);
-                DBTable.db.executeUpdate(query, null, null);
-            }
+             for (int i = 1; i < ((int)(Math.random() * 97)) + 3; i++) {
+                 String query = String.format("INSERT INTO %s (%s) VALUES (%d, '%s', %f)",
+                     DBTable.AvailableDateDB, "listingId, startDate, price",  i, dateString, (double) Math.round(Math.random() * 17000) / 100 + 40);
+                 System.out.println(query);
+                 DBTable.db.executeUpdate(query, null, null);
+             }
 
             startCalendar.roll(Calendar.DATE, true);
-            if (startCalendar.get(Calendar.DATE) == 1) {
+             if (startCalendar.get(Calendar.DATE) == 1) {
                 startCalendar.roll(Calendar.MONTH, true);
-                if (startCalendar.get(Calendar.MONTH) == 0)
+                 if (startCalendar.get(Calendar.MONTH) == 0)
                     startCalendar.roll(Calendar.YEAR, true);
-            }
+             }
         }
 
         Booking.bookListing("155555551", "1", "2023-09-07", "2023-9-12");
@@ -354,6 +354,7 @@ public class Setup {
 
     }
 
+
     public static void updateData() {
         DBTable.dev = true;
         Calendar todayCalendar = Calendar.getInstance();
@@ -394,8 +395,8 @@ public class Setup {
             DBTable.db.executeUpdate(query, null, null);
         }
 
-        for (int i = 0; i < 50; i ++) {
-            String query = String.format("INSERT INTO ProvidedAmenity (listingId, itemId, price) VALUES (%d, %d, %f)", ((int)(Math.random() * 12)) + 1, ((int)(Math.random() * Listing.amenities.size())) + 1, ((Math.random() * 22)) + 2);
+        for (int i = 0; i < 600; i ++) {
+            String query = String.format("INSERT INTO ProvidedAmenity (listingId, itemId, price) VALUES (%d, %d, %f)", ((int)(Math.random() * 99)) + 1, ((int)(Math.random() * Listing.amenities.size())) + 1, ((Math.random() * 22)) + 2);
             DBTable.db.executeUpdate(query, null, null);
         }
     }
