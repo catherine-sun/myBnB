@@ -250,11 +250,9 @@ public class App {
                     int ratingType = input.nextInt();
                     input.nextLine();
                     sin = sessionUser.getSinNumber();
-                    if (ratingType == 1) {
-                        fields = new String[]{"Listing Id", "Start Date of Booking"};
-                        inp = SQLUtils.getInputArgs(fields);
-                        Booking.rateBookingRenter(sin, inp[0], inp[1]);
-                    }
+                    fields = new String[]{"Listing Id", "Start Date of Booking"};
+                    inp = SQLUtils.getInputArgs(fields);
+                    Booking.rateBooking(sin, inp[0], inp[1], ratingType == 1);
 
                     continue;
 

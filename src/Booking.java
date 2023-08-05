@@ -99,24 +99,34 @@ public class Booking extends DBTable {
   
     }
 
-    public static void rateBookingRenter (String sin, String listingId, String startDate) {
+    public static void rateBooking (String sin, String listingId, String startDate, boolean renter) {
         Integer listingIdNum = Integer.parseInt(listingId);
-        String query = String.format ("SELECT * FROM %s WHERE renterSin = '%s' AND listingId=%d AND startDate = '%s",
+        String query = String.format ("SELECT * FROM %s WHERE renterSin = '%s' AND listingId=%d AND startDate = '%s'",
             BookingDB, sin, listingIdNum, startDate);
         
         QueryResult res = db.execute(query, null, null);
         try {
             if (res.rs.next()) {
-                String[] fields = new String[] {"Subject of rating (Host / Listing)", "Rating"}, inputs;
-                do {
+            
+                String[] fields, inputs;
+                if (renter) {
+                    fields  = new String[] {"Subject of rating (Host / Listing)", "Rating"};
+                    do {
+                        inputs = SQLUtils.getInputArgs(fields);
+                    } while (!inputs[0].equals("Host") && inputs[0].equals("Listing"));
+                } else {
+                    fields  = new String[] {"Rating"};
                     inputs = SQLUtils.getInputArgs(fields);
-                } while (!inputs[0].equals("Host") && inputs[0].equals("Listing"));
+                    inputs = new String[] { "Renter", inputs[0]};
+                }
+                
                 System.out.println("Enter any comments you have (optional):");
                 Scanner input = new Scanner(System.in);
                 String comment = input.nextLine().trim();
-                query = String.format("INSERT INTO %s (%s) VALUES (%d, '%s', '%s', %d, '%s')", RatingDB,
-                    "listingId, renterSin, startDate, score, commentBody", listingIdNum, sin, startDate, Integer.parseInt(inputs[1]),
-                    comment);
+                comment = comment.replaceAll("'", "''");
+                query = String.format("INSERT INTO %s (%s) VALUES (%d, '%s', '%s', %d, '%s', '%s')", RatingDB,
+                    "listingId, authorSin, startDate, score, commentBody, object", listingIdNum, sin, startDate, Integer.parseInt(inputs[1]),
+                    comment, inputs[0]);
                 
                 db.executeUpdate(query, "Rating created", "There was a problem rating this booking");
             } else {
