@@ -28,7 +28,7 @@ public class Reports extends DBTable {
 			+ "%2d - Find possible commerical hosts in a specified area\n"
 			+ "%2d - Rank renters by number of bookings within a specified time range\n"
 			+ "%2d - Rank hosts and renters by number of booking cancellations\n"
-			+ "%2d - Find the most popular noun phrase for a listing\n"
+			+ "%2d - Find the most popular noun phrase per listing\n"
 			+ "%2d - Exit reports",
 			numBookingsDateRange, numListingsLocation, rankHostsByNumListings,findCommercialHosts,
 			rankRentersByNumBookings, rankUsersByCancellations, popularNounPhrases, exitReport);
