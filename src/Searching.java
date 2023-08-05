@@ -359,7 +359,7 @@ public class Searching extends DBTable {
             + (!hasStart && (!hasMin || !hasMax) ? " AND " : "")
             + (hasStart ? "" : "startDate >= '" + startDate + "'")
             + (!hasEnd && (!hasStart || !hasMin || !hasMax) ? " AND " : "")
-            + (hasEnd ? "" : "startDate <= '" + endDate + "'");
+            + (hasEnd ? "" : "startDate < '" + endDate + "'");
 
         if (!isNullOrEmpty(filter)) {
             filter = "WHERE " + filter;
