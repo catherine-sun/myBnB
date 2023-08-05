@@ -246,6 +246,16 @@ public class App {
 
                 case rate:
                     /* TODO */
+                    System.out.println("Enter 1 if you are a renter, 2 if you are are host: ");
+                    int ratingType = input.nextInt();
+                    input.nextLine();
+                    sin = sessionUser.getSinNumber();
+                    if (ratingType == 1) {
+                        fields = new String[]{"Listing Id", "Start Date of Booking"};
+                        inp = SQLUtils.getInputArgs(fields);
+                        Booking.rateBookingRenter(sin, inp[0], inp[1]);
+                    }
+
                     continue;
 
                 case displayUser:

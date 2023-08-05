@@ -1,6 +1,7 @@
 import java.sql.Date;
 import java.sql.SQLException;
 import java.util.Calendar;
+import java.util.Scanner;
 
 public class Booking extends DBTable {
     
@@ -10,6 +11,24 @@ public class Booking extends DBTable {
         
         Integer listingIdNum = Integer.parseInt(listingId);
         
+        /* If the renterSin is the host, prevent them from booking */
+        String query = String.format("SELECT * FROM %s WHERE hostSin = '%s' AND listingId = %d", 
+            PostingDB, sin, listingIdNum);
+        
+        QueryResult result = db.execute(query, null, null);
+        
+        boolean isHost = false;
+        try {
+            if (result.rs.next()) {
+                System.out.println("You cannot book a listing of which you are the host");
+                isHost = true;
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+
+        if (isHost) return;
+
         Date startDate = Date.valueOf(start);
         Date endDate = Date.valueOf(end);
         Calendar startCalendar = Calendar.getInstance();
@@ -49,7 +68,7 @@ public class Booking extends DBTable {
                     startCalendar.get(Calendar.MONTH) + 1, startCalendar.get(Calendar.DAY_OF_MONTH));
  
                      
-                String query = String.format("SELECT price FROM %s WHERE listingId = %d AND startDate = '%s'",
+                query = String.format("SELECT price FROM %s WHERE listingId = %d AND startDate = '%s'",
                     AvailableDateDB, listingIdNum, dateString);  
                 
                 QueryResult res = db.execute(query, null, null);
@@ -71,12 +90,40 @@ public class Booking extends DBTable {
                     startCalendar.roll(Calendar.MONTH, true);
             }
 
-            String query = String.format("INSERT INTO %s (%s) VALUES (%d, '%s', '%s', '%s', %f, '%s')",
+            query = String.format("INSERT INTO %s (%s) VALUES (%d, '%s', '%s', '%s', %f, '%s')",
                 BookingDB, "listingId, renterSin, startDate, endDate, price, bookingStatus", listingIdNum, sin, start, end, price, "OK");  
             
             db.executeUpdate(query, "Successfully booked listing from " + start + " to " + end, "There was a problem booking the listing"); 
             System.out.println("The total cost of stay is " + price);
         }
   
+    }
+
+    public static void rateBookingRenter (String sin, String listingId, String startDate) {
+        Integer listingIdNum = Integer.parseInt(listingId);
+        String query = String.format ("SELECT * FROM %s WHERE renterSin = '%s' AND listingId=%d AND startDate = '%s",
+            BookingDB, sin, listingIdNum, startDate);
+        
+        QueryResult res = db.execute(query, null, null);
+        try {
+            if (res.rs.next()) {
+                String[] fields = new String[] {"Subject of rating (Host / Listing)", "Rating"}, inputs;
+                do {
+                    inputs = SQLUtils.getInputArgs(fields);
+                } while (!inputs[0].equals("Host") && inputs[0].equals("Listing"));
+                System.out.println("Enter any comments you have (optional):");
+                Scanner input = new Scanner(System.in);
+                String comment = input.nextLine().trim();
+                query = String.format("INSERT INTO %s (%s) VALUES (%d, '%s', '%s', %d, '%s')", RatingDB,
+                    "listingId, renterSin, startDate, score, commentBody", listingIdNum, sin, startDate, Integer.parseInt(inputs[1]),
+                    comment);
+                
+                db.executeUpdate(query, "Rating created", "There was a problem rating this booking");
+            } else {
+                System.out.println("You have had no bookings for this listing for " + startDate);
+            }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
     }
 }

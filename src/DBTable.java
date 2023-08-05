@@ -7,6 +7,7 @@ public abstract class DBTable {
     public static final String ListingDB = "Listing";
     public static final String PostingDB = "Posting";
     public static final String AvailableDateDB = "AvailableDate";
+    public static final String RatingDB = "Rating";
 
     public static DBConnection db;
 
