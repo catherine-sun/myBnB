@@ -334,13 +334,23 @@ public class App {
                     continue;
 
                 case updateAvailability:
-                    fields = new String[] {"Listing Id"};
+                    sin = sessionUser.getSinNumber();
+                    fields = new String[] {"Listing Id", "Mark availability (1) / Remove availability (2)", "Entering a date range (1) / Entering a single date (2)"};
                     inp = SQLUtils.getInputArgs(fields);
-                    Listing.setAvailableDateRange(inp[0]);
+                    if (inp[2].equals("1"))
+                        Listing.setAvailableDateRange(sin, inp[0], Integer.parseInt(inp[1]) == 1);
+                    else if (inp[2].equals("2"))
+                        Listing.setAvailableDateSingle(sin, inp[0], Integer.parseInt(inp[1]) == 1);
+                    else
+                        System.out.println("Invalid input");
                     continue;
 
                 case updatePrice:
                     /* TODO */
+                    sin = sessionUser.getSinNumber();
+                    fields = new String[] {"Listing Id", "Start of date range", "End of date range", "Price"};
+                    inp = SQLUtils.getInputArgs(fields);
+                    Listing.updatePriceRange(sin, inp[0], inp[1], inp[2], inp[3]);
                     continue;
 
                 case deleteListing:

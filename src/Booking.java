@@ -58,8 +58,11 @@ public class Booking extends DBTable {
             }
 
             startCalendar.roll(Calendar.DATE, true);
-            if (startCalendar.get(Calendar.DATE) == 1)
+            if (startCalendar.get(Calendar.DATE) == 1) {
                 startCalendar.roll(Calendar.MONTH, true);
+                if (startCalendar.get(Calendar.MONTH) == 0)
+                    startCalendar.roll(Calendar.YEAR, true);
+            }
         }
 
         if (datesAreAvailable) {
@@ -90,8 +93,11 @@ public class Booking extends DBTable {
                 db.executeUpdate(query, null, null);
 
                 startCalendar.roll(Calendar.DATE, true);
-                if (startCalendar.get(Calendar.DATE) == 1)
+                if (startCalendar.get(Calendar.DATE) == 1) {
                     startCalendar.roll(Calendar.MONTH, true);
+                    if (startCalendar.get(Calendar.MONTH) == 0)
+                        startCalendar.roll(Calendar.YEAR, true);
+                }
             }
 
             query = String.format("INSERT INTO %s (%s) VALUES (%d, '%s', '%s', '%s', %f, '%s')",
