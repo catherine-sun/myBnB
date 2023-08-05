@@ -231,8 +231,8 @@ public class App {
             switch (choice) {
                 case bookListing:
                     sin = sessionUser.getSinNumber();
-                    if (!user.isRenter(sin)) {
-                        user.createRenter(sin);
+                    if (!User.isRenter(sin)) {
+                        User.createRenter(sin);
                     }
                     /* TODO */
                     fields = new String[]{"Listing ID", "Start date", "End date"};
@@ -275,21 +275,21 @@ public class App {
                     // If the current user isn't a renter, create a new entry in the renter table
                     sin = sessionUser.getSinNumber();
                     if (!User.isRenter(sin)) {
-                        user.createRenter(sin);
+                        User.createRenter(sin);
                     }
                     /* TODO */
                     continue;
 
                 case rentingHistory:
                     sin = sessionUser.getSinNumber();
-                    if (!user.isRenter(sin)) {
+                    if (!User.isRenter(sin)) {
                         System.out.println("Empty");
                     }
                     /* TODO */
                     continue;
 
                 case deleteUser:
-                    user.deleteUser(sessionUser.getSinNumber());
+                    User.deleteUser(sessionUser.getSinNumber());
                     sessionUser = null;
                     continue;
 
@@ -304,7 +304,7 @@ public class App {
                 }
 
             /* Hosts only */
-            if (!user.isHost(sessionUser.getSinNumber())) {
+            if (!User.isHost(sessionUser.getSinNumber())) {
                 System.out.println("You currently aren't hosting any listings");
                 continue;
             }
