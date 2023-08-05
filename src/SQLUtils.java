@@ -29,7 +29,6 @@ public class SQLUtils {
                 args[i] = input.nextLine().trim().replaceAll("'", "''");
             } while (args[i].length() == 0);
         }
-        //input.close();
         return args;
     }
 
