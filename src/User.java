@@ -199,7 +199,6 @@ public static void getRenterHistory(String sin) {
         String query = String.format("SELECT %s FROM %s WHERE Booking.renterSin = '%s' GROUP BY %s",
             displayedFields, table, sin, displayedFields);
 
-        System.out.println(query);
         displayRenterHistory(db.execute(query, null, null).rs);
     }
 
@@ -252,8 +251,9 @@ public static void getRenterHistory(String sin) {
         String query = String.format("SELECT %s FROM %s WHERE Posting.hostSin = '%s'",
             displayedFields, table, sin);
 
-        System.out.println(query);
-        Searching.displayListings(db.execute(query, null, null).rs);
+        String[] fields = new String[]{"Host:", "Latitude:", "ID:", "Longitude:", "Type:", "Address:", "Min Price:", "Postal code:",
+            "Average Price:", "City:", "Max Price:", "Country:"};
+        Searching.displayListings(db.execute(query, null, null).rs, fields);
     }
 
     /*CREATE TABLE Renter (

@@ -267,7 +267,10 @@ public class Searching extends DBTable {
             + (!hasType && (prev = prev || !hasCountry) ? " AND " : "")
             + (hasType ? "" : "listingType = '" + listingType + "'");
 
-        filter += getAmenityFilter();
+        String amenityFilter = getAmenityFilter();
+        if (!isNullOrEmpty(amenityFilter)) {
+            filter += isNullOrEmpty(filter) ? amenityFilter : " AND" + amenityFilter;
+        }
 
         if (!isNullOrEmpty(filter)) {
             filter = "WHERE " + filter;
@@ -276,9 +279,11 @@ public class Searching extends DBTable {
         String query = String.format("SELECT %s FROM %s %s GROUP BY %s ORDER BY %s",
             displayedFields, postedListings + availableListings(), filter, displayedFields, "averagePrice " + (ascendingPrice ? "ASC" : "DESC"));
 
-        System.out.println(query);
         ResultSet rs = db.execute(query, null, null).rs;
-        displayListings(rs);
+
+        String[] fields = new String[]{"Host:", "Latitude:", "ID:", "Longitude:", "Type:", "Address:", "Min Price:", "Postal code:",
+            "Average Price:", "City:", "Max Price:", "Country:"};
+        displayListings(rs, fields);
     }
 
     public static void searchNearby(String postalCode, double radius) {
@@ -286,33 +291,45 @@ public class Searching extends DBTable {
         String d[] = getXYFromPostalCode(postalCode);
 
         if (d == null) {
-            System.out.println("No listing with postal code " + postalCode);
+            System.out.println("No listing satisfying filters and postal code " + postalCode);
             return;
         }
+        String distance = "( 3959 * ACOS( COS( RADIANS(latitude) ) * COS( RADIANS( " + d[1] +" ) ) * COS( RADIANS( " + d[0] + " ) - RADIANS(longitude) ) + SIN( RADIANS(latitude) ) * SIN( RADIANS( " + d[1] + " ))))";
+        String filter = (radius < 0 ? "" : distance + " <= " + radius);
 
-        String distance = "SQRT(POWER(longitude - " + d[0] + ", 2) +  POWER(latitude - " + d[1] + ", 2))";
-        String filter = (radius < 0 ? "" : " AND " + distance + " <= " + radius)
-            + (isNullOrEmpty(listingType) ? "" : " AND listingType = '" + listingType + "'");
+        if (!isNullOrEmpty(listingType)) {
+            filter += isNullOrEmpty(filter) ? "listingType = '" + listingType + "'" : " AND listingType = '" + listingType + "'";
+        }
 
-        filter += isNullOrEmpty(filter) ? "" : " AND" + getAmenityFilter();
+        String amenityFilter = getAmenityFilter();
+        if (!isNullOrEmpty(amenityFilter)) {
+            filter += isNullOrEmpty(filter) ? amenityFilter : " AND" + amenityFilter;
+        }
+        filter = isNullOrEmpty(filter) ? "" : "WHERE " + filter;
+        System.out.println(filter);
 
-        String query = String.format("SELECT %s FROM %s WHERE %s GROUP BY %s ORDER BY averagePrice %s, %s ASC",
-            displayedFields + ", " + distance + " AS distance", postedListings + availableListings(), filter, displayedFields, (ascendingPrice ? "ASC" : "DESC"),"10");
+        String query = String.format("SELECT %s FROM %s %s GROUP BY %s ORDER BY %s ASC, averagePrice %s",
+            displayedFields + ", " + distance + " AS distance", postedListings + availableListings(), filter, displayedFields, "distance", (ascendingPrice ? "ASC" : "DESC"));
 
-        System.out.println(query);
         ResultSet rs = db.execute(query, null, null).rs;
-        displayListings(rs);
+
+        String[] fields = new String[]{"Host:", "Latitude:", "ID:", "Longitude:", "Type:", "Address:", "Min Price:", "Postal code:",
+            "Average Price:", "City:", "Max Price:", "Country:", "Relative Dist:", ""};
+        displayListings(rs, fields);
     }
 
     public static String[] getXYFromPostalCode(String postalCode) {
         String query = String.format("SELECT %s FROM %s WHERE %s = '%s'",
-        "longitude, latitude, postalCode", postedListings + availableListings(), "postalCode", postalCode);
+        "longitude, latitude, postalCode", postedListings, "postalCode", postalCode);
 
-        query += isNullOrEmpty(query) ? "" : " AND" + getAmenityFilter();
+        String filter = getAmenityFilter();
+        if (!isNullOrEmpty(filter)) {
+            query += isNullOrEmpty(query) ? " WHERE" + filter : " AND" + filter;
+        }
 
         ResultSet rs = db.execute(query, null, null).rs;
         try {
-            if (rs.next()) {
+            if (rs != null && rs.next()) {
                 String x = rs.getObject(1).toString();
                 String y = rs.getObject(2).toString();
                 String id = rs.getString(3);
@@ -362,10 +379,7 @@ public class Searching extends DBTable {
 // 	country VARCHAR(30) NOT NULL
 // );
 
-    public static void displayListings(ResultSet rs) {
-
-        String[] fields = new String[]{"Host:", "Latitude:", "ID:", "Longitude:", "Type:", "Address:", "Min Price:", "Postal code:",
-            "Average Price:", "City:", "Max Price:", "Country:"};
+    public static void displayListings(ResultSet rs, String[] fields) {
         String hor = " " + "-".repeat(98);
         try {
             if (rs == null || !rs.next()) {
@@ -378,13 +392,20 @@ public class Searching extends DBTable {
                 for (int i = 0; i < fields.length; i++) {
                     System.out.printf(i%2 == 0 ? "|" : "");
 
-                    if (i == 0) {
+                    if (fields[i].isEmpty()) {
+                        System.out.printf(" %-16s %-30s ",
+                            fields[i], "");
+                    } else if (i == 0) {
                         System.out.printf(" %-16s %-30s ",
                             fields[i], User.getNameBySin(rs.getString(i + 1)));
                     } else if (i == 6 || i == 8 || i == 10) {
                         String amt = String.format("%.2f", rs.getDouble(i + 1));
                         System.out.printf(" %-16s %-30s ",
                             fields[i], "$" + amt);
+                    } else if (fields[i].equals("Relative Dist:")) {
+                        String dist = String.format("%.2f", rs.getDouble(i + 1));
+                        System.out.printf(" %-16s %-30s ",
+                            fields[i], dist + " km");
                     } else {
                         System.out.printf(" %-16s %-30s ",
                             fields[i], rs.getObject(i + 1).toString());

@@ -350,8 +350,6 @@ public class Reports extends DBTable {
 			query = String.format("SELECT fullName, COUNT(*) as count FROM Booking INNER JOIN User ON renterSin = sinNumber" +
 				" WHERE bookingStatus = '%s' GROUP BY renterSin ORDER BY COUNT(*) DESC", Booking.STATUS_CANCELLED_RENTER);
 
-			System.out.println(query);
-
 			res = db.execute(query, null, null);
 
 			str = "******* Rank Renters By Cancellations *******\n";
