@@ -293,6 +293,9 @@ public class App {
                         User.createRenter(sin);
                     }
                     /* TODO */
+                    fields = new String[] {"Payment Info"};
+                    inp = SQLUtils.getInputArgs(fields);
+                    User.addPaymentInfo(sin, inp[0]);
                     continue;
 
                 case rentingHistory:

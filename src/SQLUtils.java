@@ -26,7 +26,7 @@ public class SQLUtils {
         for (int i = 0; i < names.length; i++){
             do {
                 System.out.println("Enter " + names[i] + ":");
-                args[i] = input.nextLine().trim();
+                args[i] = input.nextLine().trim().replaceAll("'", "''");
             } while (args[i].length() == 0);
         }
         //input.close();
