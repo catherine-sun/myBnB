@@ -189,10 +189,10 @@ public class Searching extends DBTable {
     }
 
     public static String getSearchPrompt() {
-        String filter = "";
+        String filter = "******* Desired Amenities *******\n";
 
         if (selectedAmenities != null) {
-            filter += selectedAmenities.size() > 0 ? "******* Desired Amenities *******\n" : "";
+            filter += selectedAmenities.size() > 0 ? "" : "Nothing yet\n";
             int i = 1;
             for (int choice : selectedAmenities) {
                 filter += String.format("%2d. %s\n",
