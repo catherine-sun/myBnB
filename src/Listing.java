@@ -78,7 +78,7 @@ public class Listing extends DBTable {
 
     public static boolean listingIsAvailable (int listingId, String date) {
 
-        String query = String.format("SELECT * FROM %s WHERE listingId = %d AND startDate = %d",
+        String query = String.format("SELECT * FROM %s WHERE listingId = %d AND startDate = '%s'",
         AvailableDateDB, listingId, date);
 
         QueryResult res = db.execute(query, null, null);

@@ -37,7 +37,7 @@ public class SQLUtils {
         boolean isEmpty = false;
 
         try {
-            isEmpty = rs.first();
+            isEmpty = rs.next();
         } catch (SQLException e) {
             System.out.println("SQLException: " + e.getMessage());
         }

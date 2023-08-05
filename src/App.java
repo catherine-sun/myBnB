@@ -218,6 +218,12 @@ public class App {
                     /* TODO */
                     break;
 
+                case gotoAccount:
+                    continue;
+
+                case gotoHostToolkit:
+                    continue;
+
                 default:
                     if (sessionUser == null) {
                         System.out.println("Please log in or create an account");
@@ -225,8 +231,8 @@ public class App {
                     }
                     break;
                 }
-            }
 
+            /* Login required */
             switch (choice) {
                 case bookListing:
                     sin = sessionUser.getSinNumber();
@@ -237,6 +243,7 @@ public class App {
                     /* TODO */
                     fields = new String[]{"Listing ID", "Start date", "End date"};
                     inp = SQLUtils.getInputArgs(fields);
+                    Booking.bookListing(sin, inp[0], inp[1], inp[2]);
                     break;
 
                 case cancelBooking:
@@ -305,21 +312,24 @@ public class App {
                     Listing.createListing(sin, inp[0], inp[1], inp[2], inp[3], inp[4], inp[5], inp[6]);
                     break;
 
-                case displayUserListings:
-                    if (!sessionUser.isHost()) {
-                        System.out.println("No listings to show");
-                        break;
-                    }
-                    /* TODO */
+                default:
                     break;
+                }
 
-                case updateListing:
-                    if (!sessionUser.isHost()) {
-                        System.out.println("No listings to update");
+            /* Hosts only */
+            if (!sessionUser.isHost()) {
+                System.out.println("You currently aren't hosting any listings");
+                continue;
+            }
+
+            switch (choice) {
+                    case displayUserListings:
+                        /* TODO */
                         break;
-                    }
-                    /* TODO */
-                    break;
+
+                    case updateListing:
+                        /* TODO */
+                        break;
 
                 case updateAvailability:
                     if (!sessionUser.isHost()) {
@@ -332,21 +342,15 @@ public class App {
                     Listing.setAvailableDateRange(inp[0]);
                     break;
 
-                case updatePrice:
-                    if (!sessionUser.isHost()) {
-                        System.out.println("No listings to update");
+                    case updatePrice:
+                        /* TODO */
                         break;
-                    }
-                    /* TODO */
-                    break;
 
-                case deleteListing:
-                    /* TODO */
-                    break;
-
-                default:
-                    break;
-            }
+                    case deleteListing:
+                        /* TODO */
+                        break;
+                }
+        }
 
         input.close();
     }
