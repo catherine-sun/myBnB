@@ -211,7 +211,7 @@ public class Listing extends DBTable {
         startCalendar.setTime(startDate);
         Calendar endCalendar = Calendar.getInstance();
         endCalendar.setTime(endDate);
-        if (startCalendar.compareTo(endCalendar) > 0) {
+        if (startCalendar.compareTo(endCalendar) >= 0) {
             System.out.println("End date cannot be earlier than the start date");
         } else {
             boolean datesAreAvailable = true;
@@ -233,7 +233,7 @@ public class Listing extends DBTable {
 
                         try {
                             if (res.rs.next()) {
-                                datesAreAvailable = true;
+                                datesAreAvailable = false;
                                 System.out.println("The selected listing is already booked for the date " + dateString);
                             }
                         } catch (SQLException e) {

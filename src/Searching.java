@@ -296,8 +296,8 @@ public class Searching extends DBTable {
 
         filter += isNullOrEmpty(filter) ? "" : " AND" + getAmenityFilter();
 
-        String query = String.format("SELECT %s FROM %s WHERE %s != '%s' %s GROUP BY %s ORDER BY averagePrice %s, %s ASC",
-            displayedFields + ", " + distance + " AS distance", postedListings + availableListings(), ListingDB + ".listingId", d[2], filter, displayedFields, (ascendingPrice ? "ASC" : "DESC"),"10");
+        String query = String.format("SELECT %s FROM %s WHERE %s GROUP BY %s ORDER BY averagePrice %s, %s ASC",
+            displayedFields + ", " + distance + " AS distance", postedListings + availableListings(), filter, displayedFields, (ascendingPrice ? "ASC" : "DESC"),"10");
 
         System.out.println(query);
         ResultSet rs = db.execute(query, null, null).rs;
@@ -306,7 +306,7 @@ public class Searching extends DBTable {
 
     public static String[] getXYFromPostalCode(String postalCode) {
         String query = String.format("SELECT %s FROM %s WHERE %s = '%s'",
-        "longitude, latitude, Listing.listingId, postalCode", postedListings + availableListings(), "postalCode", postalCode);
+        "longitude, latitude, postalCode", postedListings + availableListings(), "postalCode", postalCode);
 
         query += isNullOrEmpty(query) ? "" : " AND" + getAmenityFilter();
 
