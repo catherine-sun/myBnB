@@ -417,7 +417,12 @@ public class Searching extends DBTable {
         System.out.println("Enter the amenity you are looking for (type in comma-separated list of numbers):");
         System.out.print(": ");
 
-        String[] inp = input.nextLine().replaceAll(" ", "").split(",");
+        String cmd = input.nextLine().replaceAll(" ", "");
+        if (isNullOrEmpty(cmd)) {
+            System.out.println("No changes made");
+            return;
+        }
+        String[] inp = cmd.split(",");
         for (String s : inp) {
             choice = Integer.parseInt(s);
             if (selectedAmenities.contains(choice)) {
@@ -432,6 +437,7 @@ public class Searching extends DBTable {
         int choice = 0;
         if (selectedAmenities == null || selectedAmenities.isEmpty()) {
             System.out.println("No amenities currently selected");
+            return;
         }
 
         System.out.println("******* Your Selected Amenities *******");
@@ -444,7 +450,12 @@ public class Searching extends DBTable {
         System.out.println("Enter the amenity filter you would like to remove (type in comma-separated list of numbers):");
         System.out.print(": ");
 
-        String[] inp = input.nextLine().replaceAll(" ", "").split(",");
+        String cmd = input.nextLine().replaceAll(" ", "");
+        if (isNullOrEmpty(cmd)) {
+            System.out.println("No changes made");
+            return;
+        }
+        String[] inp = cmd.split(",");
         for (String s : inp) {
             choice = Integer.parseInt(s);
             if (choice >= 1 && choice <= selectedAmenities.size()) {
