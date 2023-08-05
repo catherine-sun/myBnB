@@ -4,7 +4,7 @@ import java.sql.SQLException;
 
 public class User extends DBTable {
 
-    public boolean isUser (String sin){
+    public static boolean isUser (String sin){
         String query = String.format("SELECT * FROM %s WHERE sinNumber = '%s'",
             UserDB, sin);
 
@@ -20,7 +20,7 @@ public class User extends DBTable {
         return result;
     }
 
-    public boolean isHost (String sin){
+    public static boolean isHost (String sin){
         String query = String.format("SELECT * FROM %s WHERE sinNumber = '%s'",
             HostDB, sin);
 
@@ -36,7 +36,7 @@ public class User extends DBTable {
         return result;
     }
 
-    public boolean isRenter (String sin){
+    public static boolean isRenter (String sin){
         String query = String.format("SELECT * FROM %s WHERE sinNumber = '%s'",
             RenterDB, sin);
 
@@ -59,7 +59,7 @@ public class User extends DBTable {
         address VARCHAR(50),
         dateOfBirth DATE
     );*/
-    public void createUser(String sin, String user, String occupation,
+    public static void createUser(String sin, String user, String occupation,
         String address, String dateOfBirth){
 
         String query = String.format("INSERT INTO %s %s VALUES ('%s', '%s', '%s', '%s', '%s')",
@@ -69,7 +69,7 @@ public class User extends DBTable {
         db.execute(query, "Successfully created user", null);
     }
 
-    public void deleteUser(String sin){
+    public static void deleteUser(String sin){
 
         String query = String.format("DELETE FROM %s WHERE sinNumber = '%s'",
             UserDB, sin);
@@ -77,7 +77,7 @@ public class User extends DBTable {
         db.execute(query, "Successfully deleted user", null);
     }
 
-    public void updateProfile (String sin, String col, String value) {
+    public static void updateProfile (String sin, String col, String value) {
 
         String query = String.format("UPDATE %s SET %s = '%s' WHERE sinNumber = '%s'",
             UserDB, col, value, sin);
@@ -85,7 +85,7 @@ public class User extends DBTable {
         db.execute(query, "Successfully updated profile", null);
     }
 
-    public void createHost(String sin){
+    public static void createHost(String sin){
 
         String query = String.format("INSERT INTO %s (%s) VALUES ('%s')",
             HostDB, "sinNumber", sin);
@@ -93,7 +93,7 @@ public class User extends DBTable {
         db.executeUpdate(query, null, null);
     }
 
-    public void createRenter(String sin){
+    public static void createRenter(String sin){
 
         String query = String.format("INSERT INTO %s (%s) VALUES ('%s')",
             RenterDB, "sinNumber", sin);
@@ -101,7 +101,7 @@ public class User extends DBTable {
         db.executeUpdate(query, null, null);
     }
 
-    public QueryResult findUser(String sin) {
+    public static QueryResult findUser(String sin) {
 
         String query = String.format("SELECT * FROM %S WHERE sinNumber = '%s'",
             UserDB, sin);

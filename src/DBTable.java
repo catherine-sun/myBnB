@@ -1,14 +1,14 @@
 public abstract class DBTable {
 
-    public final String UserDB = "User";
-    public final String HostDB = "Host";
-    public final String RenterDB = "Renter";
-    public final String BookingDB = "Booking";
-    public final String ListingDB = "Listing";
-    public final String PostingDB = "Posting";
-    public final String AvailableDateDB = "AvailableDate";
+    public static final String UserDB = "User";
+    public static final String HostDB = "Host";
+    public static final String RenterDB = "Renter";
+    public static final String BookingDB = "Booking";
+    public static final String ListingDB = "Listing";
+    public static final String PostingDB = "Posting";
+    public static final String AvailableDateDB = "AvailableDate";
 
-    public DBConnection db;
+    public static DBConnection db;
 
     public void setConnection (DBConnection db) {
         this.db = db;

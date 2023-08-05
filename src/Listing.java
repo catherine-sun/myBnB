@@ -5,7 +5,7 @@ import java.util.Calendar;
 
 public class Listing extends DBTable {
 
-    public void createListing (String sin, String listingType, String latitude, String longitude,
+    public static void createListing (String sin, String listingType, String latitude, String longitude,
         String streetAddress, String postalCode, String city, String country) {
 
         double lat = Double.parseDouble(latitude);
@@ -33,7 +33,7 @@ public class Listing extends DBTable {
         db.executeUpdate(query, null, null);
     }
 
-    public void setAvailableDateSingle (String listingId)
+    public static void setAvailableDateSingle (String listingId)
     {
         String [] fields = new String[]{"Date to set as available", "Price"};
         String [] inputs = SQLUtils.getInputArgs(fields);
@@ -46,7 +46,7 @@ public class Listing extends DBTable {
 
     }
 
-    public void setAvailableDateRange (String listingId) {
+    public static void setAvailableDateRange (String listingId) {
         Integer listingIdNum = Integer.parseInt(listingId);
         String [] fields = new String[]{"Start of date range to set as available", "End of date range to set as available", "Price"};
         String[] inputs = SQLUtils.getInputArgs(fields);
@@ -76,7 +76,17 @@ public class Listing extends DBTable {
         }
     }
 
-    public void searchAndFilter() {
+    public static boolean listingIsAvailable (int listingId, String date) {
+
+        String query = String.format("SELECT * FROM %s WHERE listingId = %d AND startDate = %d",
+        AvailableDateDB, listingId, date);
+
+        QueryResult res = db.execute(query, null, null);
+
+        return SQLUtils.resultSetIsEmpty(res.rs);
+    }
+
+    public static void searchAndFilter() {
         String searchPrompt = "TODO";
 
         System.out.println(searchPrompt);

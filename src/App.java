@@ -129,10 +129,11 @@ public class App {
                             updateListing, updateAvailability, updatePrice,
                             deleteListing, start);
 
-        User user = new User();
-        user.setConnection(db);
-        Listing listing = new Listing();
-        listing.setConnection(db);
+        //User user = new User();
+        //user.setConnection(db);
+        //Listing listing = new Listing();
+        //listing.setConnection(db);
+        DBTable.db = db;
         String[] inp, fields;
         String sin;
         QueryResult res;
@@ -183,14 +184,14 @@ public class App {
                         }
                     } while (!sin.matches("[A-Za-z0-9]{9}"));
 
-                    res = user.findUser(sin);
+                    res = User.findUser(sin);
                     sessionUser = res.rs.next() ? new UserModel(res.rs) : null;
 
                     if (sessionUser != null) {
-                        if (user.isHost(sin)) {
+                        if (User.isHost(sin)) {
                             sessionUser.setRole("Host");
                         }
-                        if (user.isRenter(sin)) {
+                        if (User.isRenter(sin)) {
                             sessionUser.setRole("Renter");
                         }
                         System.out.println("Susccessfully logged in!");
@@ -204,7 +205,7 @@ public class App {
                     }
                     fields = new String[]{"Sin Number", "Full Name", "Occupation", "Address", "Date of Birth"};
                     inp = SQLUtils.getInputArgs(fields);
-                    user.createUser(inp[0], inp[1], inp[2], inp[3], inp[4]);
+                    User.createUser(inp[0], inp[1], inp[2], inp[3], inp[4]);
                     sessionUser = new UserModel(inp[0], inp[1], inp[2], inp[3], Date.valueOf(inp[4]));
                     break;
 
@@ -213,7 +214,7 @@ public class App {
                     break;
 
                 case searchListings:
-                    listing.searchAndFilter();
+                    Listing.searchAndFilter();
                     /* TODO */
                     break;
 
@@ -230,10 +231,12 @@ public class App {
                 case bookListing:
                     sin = sessionUser.getSinNumber();
                     if (!sessionUser.isRenter()) {
-                        user.createRenter(sin);
+                        User.createRenter(sin);
                         sessionUser.setRole("Renter");
                     }
                     /* TODO */
+                    fields = new String[]{"Listing ID", "Start date", "End date"};
+                    inp = SQLUtils.getInputArgs(fields);
                     break;
 
                 case cancelBooking:
@@ -262,7 +265,7 @@ public class App {
                         if (choice < 0 || choice >= 4) continue;
                         fields = new String[]{"occupation", "address", "dateOfBirth"};
                         inp = SQLUtils.getInputArgs(new String[] {fields[choice - 1]});
-                        user.updateProfile(sessionUser.getSinNumber(), fields[choice -1], inp[0]);
+                        User.updateProfile(sessionUser.getSinNumber(), fields[choice -1], inp[0]);
 
                     } while (choice != 4);
                     break;
@@ -271,7 +274,7 @@ public class App {
                     // If the current user isn't a renter, create a new entry in the renter table
                     sin = sessionUser.getSinNumber();
                     if (!sessionUser.isRenter()) {
-                        user.createRenter(sin);
+                        User.createRenter(sin);
                         sessionUser.setRole("Renter");
                     }
                     /* TODO */
@@ -285,7 +288,7 @@ public class App {
                     break;
 
                 case deleteUser:
-                    user.deleteUser(sessionUser.getSinNumber());
+                    User.deleteUser(sessionUser.getSinNumber());
                     sessionUser = null;
                     break;
 
@@ -293,13 +296,13 @@ public class App {
                     // If the current user isn't a host, create a new entry in the host table
                     sin = sessionUser.getSinNumber();
                     if (!sessionUser.isHost()) {
-                        user.createHost(sin);
+                        User.createHost(sin);
                         sessionUser.setRole("Host");
                     }
 
                     fields = new String[] {"Listing Type", "Latitude", "Longitude", "Street Address", "Postal Code", "City", "Country"};
                     inp = SQLUtils.getInputArgs(fields);
-                    listing.createListing(sin, inp[0], inp[1], inp[2], inp[3], inp[4], inp[5], inp[6]);
+                    Listing.createListing(sin, inp[0], inp[1], inp[2], inp[3], inp[4], inp[5], inp[6]);
                     break;
 
                 case displayUserListings:
@@ -326,7 +329,7 @@ public class App {
 
                     fields = new String[] {"Listing Id"};
                     inp = SQLUtils.getInputArgs(fields);
-                    listing.setAvailableDateRange(inp[0]);
+                    Listing.setAvailableDateRange(inp[0]);
                     break;
 
                 case updatePrice:

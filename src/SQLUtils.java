@@ -1,3 +1,5 @@
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Scanner;
 
 public class SQLUtils {
@@ -29,5 +31,16 @@ public class SQLUtils {
         }
         //input.close();
         return args;
+    }
+
+    public static boolean resultSetIsEmpty (ResultSet rs){
+        boolean isEmpty = false;
+
+        try {
+            isEmpty = rs.first();
+        } catch (SQLException e) {
+            System.out.println("SQLException: " + e.getMessage());
+        }
+        return isEmpty;
     }
 }
