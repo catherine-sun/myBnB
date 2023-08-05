@@ -45,7 +45,7 @@ public class Booking extends DBTable {
 
             double price = 0;
             while (startCalendar.compareTo(endCalendar) < 0) {
-                String dateString = String.format("%d-%d-%d", startCalendar.get(Calendar.YEAR),
+                String dateString = String.format("%d-%02d-%02d", startCalendar.get(Calendar.YEAR),
                     startCalendar.get(Calendar.MONTH) + 1, startCalendar.get(Calendar.DAY_OF_MONTH));
  
                      
@@ -62,8 +62,8 @@ public class Booking extends DBTable {
                 }
 
                 query = String.format("DELETE FROM %s WHERE listingId = %d AND startDate = '%s'",
-                    BookingDB, listingIdNum, dateString);   
-
+                    AvailableDateDB, listingIdNum, dateString);   
+                
                 db.executeUpdate(query, null, null);
 
                 startCalendar.roll(Calendar.DATE, true);
@@ -71,8 +71,8 @@ public class Booking extends DBTable {
                     startCalendar.roll(Calendar.MONTH, true);
             }
 
-            String query = String.format("INSERT INTO %s (%s) VALUES (%d, '%s', '%s', '%s', %f)",
-                BookingDB, "listingId, renterSin, startDate, endDate, price", listingIdNum, sin, start, end, price);  
+            String query = String.format("INSERT INTO %s (%s) VALUES (%d, '%s', '%s', '%s', %f, '%s')",
+                BookingDB, "listingId, renterSin, startDate, endDate, price, bookingStatus", listingIdNum, sin, start, end, price, "OK");  
             
             db.executeUpdate(query, "Successfully booked listing from " + start + " to " + end, "There was a problem booking the listing"); 
             System.out.println("The total cost of stay is " + price);
