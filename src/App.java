@@ -136,6 +136,7 @@ public class App {
         DBTable.db = db;
         String[] inp, fields;
         String sin;
+        int renterOrHost;
         QueryResult res;
 
         Menu curMenu = Menu.MAIN;
@@ -242,18 +243,24 @@ public class App {
 
                 case cancelBooking:
                     /* TODO */
+                    sin = sessionUser.getSinNumber();
+                    System.out.println("Enter 1 if you are the renter, 2 if you are the host: ");
+                    renterOrHost = input.nextInt();
+                    input.nextLine();
+                    fields = new String[]{"Listing ID", "Start Date of Booking"};
+                    inp = SQLUtils.getInputArgs(fields);
+                    Booking.cancelBooking(sin, inp[0], inp[1], renterOrHost == 1);
                     continue;
 
                 case rate:
                     /* TODO */
-                    System.out.println("Enter 1 if you are a renter, 2 if you are are host: ");
-                    int ratingType = input.nextInt();
+                    System.out.println("Enter 1 if you are the renter, 2 if you are the host: ");
+                    renterOrHost = input.nextInt();
                     input.nextLine();
                     sin = sessionUser.getSinNumber();
                     fields = new String[]{"Listing Id", "Start Date of Booking"};
                     inp = SQLUtils.getInputArgs(fields);
-                    Booking.rateBooking(sin, inp[0], inp[1], ratingType == 1);
-
+                    Booking.rateBooking(sin, inp[0], inp[1], renterOrHost == 1);
                     continue;
 
                 case displayUser:
@@ -338,6 +345,9 @@ public class App {
 
                 case deleteListing:
                     /* TODO */
+                    fields = new String[] {"Listing Id"};
+                    inp = SQLUtils.getInputArgs(fields);
+                    Listing.deleteListing(sessionUser.getSinNumber(), inp[0]);
                     continue;
             }
         }

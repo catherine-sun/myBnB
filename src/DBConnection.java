@@ -52,9 +52,10 @@ public class DBConnection {
     public QueryResult executeUpdate (String query, String success, String error) {
         Statement stmt = null;
         ResultSet rs = null;
+        int rc = 0;
         try {
             stmt = conn.createStatement();
-            if (stmt.executeUpdate(query, Statement.RETURN_GENERATED_KEYS) > 0) {
+            if ((rc = stmt.executeUpdate(query, Statement.RETURN_GENERATED_KEYS)) > 0) {
                 rs = stmt.getResultSet();
                 if (success != null) System.out.println(success);
             } else {
@@ -68,7 +69,7 @@ public class DBConnection {
             System.out.println("VendorError: " + ex.getErrorCode());
             if (error != null) System.out.println(error);
         }
-        return new QueryResult(stmt, rs);
+        return new QueryResult(stmt, rs, rc);
     }
 
     public static void cleanResultSet (ResultSet rs){

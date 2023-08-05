@@ -5,12 +5,16 @@ import java.util.Scanner;
 
 public class Booking extends DBTable {
     
+    public static final String STATUS_OK = "OK";
+    public static final String STATUS_CANCELLED_RENTER = "CANCELLED BY RENTER";
+    public static final String STATUS_CANCELLED_HOST = "CANCELLED BY HOST";
 
     public static void bookListing (String sin, String listingId, String start, 
         String end) {
         
         Integer listingIdNum = Integer.parseInt(listingId);
-        
+        if (!Listing.validateListingId(listingIdNum)) return;
+
         /* If the renterSin is the host, prevent them from booking */
         String query = String.format("SELECT * FROM %s WHERE hostSin = '%s' AND listingId = %d", 
             PostingDB, sin, listingIdNum);
@@ -91,7 +95,7 @@ public class Booking extends DBTable {
             }
 
             query = String.format("INSERT INTO %s (%s) VALUES (%d, '%s', '%s', '%s', %f, '%s')",
-                BookingDB, "listingId, renterSin, startDate, endDate, price, bookingStatus", listingIdNum, sin, start, end, price, "OK");  
+                BookingDB, "listingId, renterSin, startDate, endDate, price, bookingStatus", listingIdNum, sin, start, end, price, STATUS_OK);  
             
             db.executeUpdate(query, "Successfully booked listing from " + start + " to " + end, "There was a problem booking the listing"); 
             System.out.println("The total cost of stay is " + price);
@@ -101,8 +105,12 @@ public class Booking extends DBTable {
 
     public static void rateBooking (String sin, String listingId, String startDate, boolean renter) {
         Integer listingIdNum = Integer.parseInt(listingId);
-        String query = String.format ("SELECT * FROM %s WHERE renterSin = '%s' AND listingId=%d AND startDate = '%s'",
-            BookingDB, sin, listingIdNum, startDate);
+        if (!Listing.validateListingId(listingIdNum)) return;
+
+        String query = renter ? String.format ("SELECT * FROM %s WHERE renterSin = '%s' AND listingId=%d AND startDate = '%s'",
+            BookingDB, sin, listingIdNum, startDate) : 
+            String.format ("SELECT * FROM %s NATURAL JOIN %s WHERE hostSin = '%s' AND listingId=%d AND startDate = '%s'",
+                PostingDB, BookingDB, sin, listingIdNum, startDate);
         
         QueryResult res = db.execute(query, null, null);
         try {
@@ -124,8 +132,8 @@ public class Booking extends DBTable {
                 Scanner input = new Scanner(System.in);
                 String comment = input.nextLine().trim();
                 comment = comment.replaceAll("'", "''");
-                query = String.format("INSERT INTO %s (%s) VALUES (%d, '%s', '%s', %d, '%s', '%s')", RatingDB,
-                    "listingId, authorSin, startDate, score, commentBody, object", listingIdNum, sin, startDate, Integer.parseInt(inputs[1]),
+                query = String.format("INSERT INTO %s (%s) VALUES ('%s', %d, '%s', '%s', %d, '%s', '%s')", RatingDB,
+                    "authorSin, listingId, renterSin, startDate, score, commentBody, object", sin, listingIdNum, res.rs.getString("renterSin"), startDate, Integer.parseInt(inputs[1]),
                     comment, inputs[0]);
                 
                 db.executeUpdate(query, "Rating created", "There was a problem rating this booking");
@@ -135,5 +143,29 @@ public class Booking extends DBTable {
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
+    }
+
+    public static void cancelBooking (String sin, String listingId, String startDate, boolean renter) {
+       Integer listingIdNum = Integer.parseInt(listingId);
+        if (!Listing.validateListingId(listingIdNum)) return;
+
+        String query = renter ? String.format ("SELECT * FROM %s WHERE renterSin = '%s' AND listingId=%d AND startDate = '%s'",
+            BookingDB, sin, listingIdNum, startDate) : 
+            String.format ("SELECT * FROM %s NATURAL JOIN %s WHERE hostSin = '%s' AND listingId=%d AND startDate = '%s'",
+                PostingDB, BookingDB, sin, listingIdNum, startDate);
+        
+        QueryResult res = db.execute(query, null, null);
+        try {
+            if (res.rs.next()) {
+                query = String.format("UPDATE %s SET bookingStatus = '%s' WHERE listingId = %d AND startDate = '%s' AND renterSin = '%s'",
+                    BookingDB, renter ? STATUS_CANCELLED_RENTER : STATUS_CANCELLED_HOST, listingIdNum, startDate, res.rs.getString("renterSin"));
+
+                db.executeUpdate(query, "Booking successfully cancelled", "There was a problem cancelling this booking");
+            } else {
+                System.out.println("You have had no bookings for this listing for " + startDate);
+            }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        } 
     }
 }

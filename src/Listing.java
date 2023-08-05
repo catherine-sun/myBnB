@@ -5,6 +5,23 @@ import java.util.Calendar;
 
 public class Listing extends DBTable {
 
+    public static boolean validateListingId (int listingIdNum) {
+        String query = String.format("SELECT * FROM %s WHERE listingId = %d", 
+            PostingDB, listingIdNum);
+        
+        QueryResult res = db.execute(query, null, null);
+        try {
+            if (res.rs.next()) {
+                return true;
+            } else {
+                System.out.println(listingIdNum + " is not a valid listing ID");
+                return false;
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+            return false;
+        }
+    }
     public static void createListing (String sin, String listingType, String latitude, String longitude,
         String streetAddress, String postalCode, String city, String country) {
 
@@ -31,13 +48,30 @@ public class Listing extends DBTable {
                 PostingDB, "listingId, hostSin", listingId, sin);
 
         db.executeUpdate(query, null, null);
+
+        query = String.format("SELECT * FROM %s WHERE sinNumber = '%s'",
+            HostDB, sin);
+
+        res = db.execute(query, null, null);
+
+        try {
+            if (!res.rs.next()) {
+                query = String.format("INSERT INTO %s (%s) VALUES ('%s')",
+                    HostDB, "sinNumber", sin);
+                db.executeUpdate(query, "Congrats on your first listing!", null);
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+
     }
 
     public static void setAvailableDateSingle (String listingId)
     {
+        Integer listingIdNum = Integer.parseInt(listingId);
+        if (!validateListingId(listingIdNum)) return;
         String [] fields = new String[]{"Date to set as available", "Price"};
         String [] inputs = SQLUtils.getInputArgs(fields);
-        Integer listingIdNum = Integer.parseInt(listingId);
         Double price = Double.parseDouble(inputs[1]);
         String query = String.format("INSERT INTO %s (%s) VALUES (%d, '%s', %f)",
             AvailableDateDB, "listingId, startDate, price", listingIdNum, inputs[0], price);
@@ -48,6 +82,7 @@ public class Listing extends DBTable {
 
     public static void setAvailableDateRange (String listingId) {
         Integer listingIdNum = Integer.parseInt(listingId);
+        if (!validateListingId(listingIdNum)) return;
         String [] fields = new String[]{"Start of date range to set as available", "End of date range to set as available", "Price"};
         String[] inputs = SQLUtils.getInputArgs(fields);
         Date startDate = Date.valueOf(inputs[0]);
@@ -70,9 +105,25 @@ public class Listing extends DBTable {
                 db.executeUpdate(query, "Successfully made listing available for " + dateString , "Error making listing available for " + dateString);
 
                 startCalendar.roll(Calendar.DATE, true);
-                if (startCalendar.get(Calendar.DATE) == 1)
+                if (startCalendar.get(Calendar.DATE) == 1) {
                     startCalendar.roll(Calendar.MONTH, true);
+                    if (startCalendar.get(Calendar.MONTH) == 0)
+                        startCalendar.roll(Calendar.YEAR, true);
+                }
             }
+        }
+    }
+
+    public static void deleteListing(String sin, String listingId) {
+        Integer listingIdNum = Integer.parseInt(listingId);
+        String query = String.format("DELETE FROM %s WHERE hostSin = '%s' AND listingId = %d",
+            PostingDB, sin, listingIdNum);
+        
+        QueryResult res = db.executeUpdate(query, null, null);
+        if (res.rowsChanged >= 1) {
+            System.out.println("Successfully deleted listing " + listingIdNum);
+        } else {
+            System.out.println("No listing was deleted");
         }
     }
 

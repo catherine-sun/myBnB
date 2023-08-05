@@ -41,7 +41,7 @@ CREATE TABLE Booking (
 	renterSin CHAR(9),
 	startDate DATE,
 	endDate DATE NOT NULL,
-	bookingStatus VARCHAR(17) NOT NULL,
+	bookingStatus VARCHAR(20) NOT NULL,
 	price REAL CHECK (price >= 0),
 	PRIMARY KEY(listingId, renterSin, startDate),
 	FOREIGN KEY (listingId) REFERENCES Listing(listingId) ON DELETE CASCADE ON UPDATE CASCADE,
@@ -51,15 +51,16 @@ CREATE TABLE Booking (
 
 CREATE TABLE Rating (
 	authorSin CHAR(9),
+	renterSin CHAR(9),
 	listingId INTEGER,
 	startDate DATE,
 	commentBody TEXT,
 	score INTEGER CHECK (score >= 1 AND score <= 5) NOT NULL,
 	object VARCHAR(30),
-	PRIMARY KEY (authorSin, listingId, startDate, object),
-	FOREIGN KEY (authorSin) REFERENCES User(sinNumber) ON DELETE CASCADE ON UPDATE CASCADE,
+	PRIMARY KEY (authorSin, renterSin, listingId, startDate, object),
+	FOREIGN KEY (renterSin) REFERENCES User(sinNumber) ON DELETE CASCADE ON UPDATE CASCADE,
 	FOREIGN KEY (listingId) REFERENCES Listing(listingId) ON DELETE CASCADE ON UPDATE CASCADE,
-	FOREIGN KEY (authorSin, listingId, startDate) REFERENCES Booking(renterSin, listingId, startDate) ON DELETE CASCADE ON UPDATE CASCADE
+	FOREIGN KEY (renterSin, listingId, startDate) REFERENCES Booking(renterSin, listingId, startDate) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 CREATE TABLE Amenity (
