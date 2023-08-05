@@ -180,24 +180,14 @@ public class App {
 
                         if (!sin.matches("[A-Za-z0-9]{9}")) {
                             System.out.println("SIN must be 9 characters long and consist of only letters and numbers");
-                            input.nextLine();
                         }
                     } while (!sin.matches("[A-Za-z0-9]{9}"));
 
                     res = User.findUser(sin);
                     sessionUser = res.rs.next() ? new UserModel(res.rs) : null;
 
-                    if (sessionUser != null) {
-                        if (User.isHost(sin)) {
-                            sessionUser.setRole("Host");
-                        }
-                        if (User.isRenter(sin)) {
-                            sessionUser.setRole("Renter");
-                        }
-                        System.out.println("Susccessfully logged in!");
-                        break;
-                    }
-                    System.out.println("User does not exist. Creating a new user...");
+                    System.out.println(sessionUser == null ? "User does not exist" : "Successfully logged in!");
+                    continue;
 
                 case createUser:
                     if (sessionUser != null) {
@@ -207,21 +197,26 @@ public class App {
                     inp = SQLUtils.getInputArgs(fields);
                     User.createUser(inp[0], inp[1], inp[2], inp[3], inp[4]);
                     sessionUser = new UserModel(inp[0], inp[1], inp[2], inp[3], Date.valueOf(inp[4]));
-                    break;
+                    continue;
 
                 case displayListings:
                     /* TODO */
-                    break;
+                    continue;
 
                 case searchListings:
-                    Listing.searchAndFilter();
                     /* TODO */
-                    break;
+                    continue;
 
                 case gotoAccount:
                     continue;
 
                 case gotoHostToolkit:
+                    continue;
+
+                case start:
+                    continue;
+
+                case exit:
                     continue;
 
                 default:
@@ -236,27 +231,26 @@ public class App {
             switch (choice) {
                 case bookListing:
                     sin = sessionUser.getSinNumber();
-                    if (!sessionUser.isRenter()) {
-                        User.createRenter(sin);
-                        sessionUser.setRole("Renter");
+                    if (!user.isRenter(sin)) {
+                        user.createRenter(sin);
                     }
                     /* TODO */
                     fields = new String[]{"Listing ID", "Start date", "End date"};
                     inp = SQLUtils.getInputArgs(fields);
                     Booking.bookListing(sin, inp[0], inp[1], inp[2]);
-                    break;
+                    continue;
 
                 case cancelBooking:
                     /* TODO */
-                    break;
+                    continue;
 
                 case rate:
                     /* TODO */
-                    break;
+                    continue;
 
                 case displayUser:
                     /* TODO */
-                    break;
+                    continue;
 
                 case updateUser:
                     do {
@@ -275,81 +269,69 @@ public class App {
                         User.updateProfile(sessionUser.getSinNumber(), fields[choice -1], inp[0]);
 
                     } while (choice != 4);
-                    break;
+                    continue;
 
                 case addPay:
                     // If the current user isn't a renter, create a new entry in the renter table
                     sin = sessionUser.getSinNumber();
-                    if (!sessionUser.isRenter()) {
-                        User.createRenter(sin);
-                        sessionUser.setRole("Renter");
+                    if (!User.isRenter(sin)) {
+                        user.createRenter(sin);
                     }
                     /* TODO */
-                    break;
+                    continue;
 
                 case rentingHistory:
-                    if (!sessionUser.isRenter()) {
+                    sin = sessionUser.getSinNumber();
+                    if (!user.isRenter(sin)) {
                         System.out.println("Empty");
                     }
                     /* TODO */
-                    break;
+                    continue;
 
                 case deleteUser:
-                    User.deleteUser(sessionUser.getSinNumber());
+                    user.deleteUser(sessionUser.getSinNumber());
                     sessionUser = null;
-                    break;
+                    continue;
 
                 case createListing:
-                    // If the current user isn't a host, create a new entry in the host table
-                    sin = sessionUser.getSinNumber();
-                    if (!sessionUser.isHost()) {
-                        User.createHost(sin);
-                        sessionUser.setRole("Host");
-                    }
-
                     fields = new String[] {"Listing Type", "Latitude", "Longitude", "Street Address", "Postal Code", "City", "Country"};
                     inp = SQLUtils.getInputArgs(fields);
-                    Listing.createListing(sin, inp[0], inp[1], inp[2], inp[3], inp[4], inp[5], inp[6]);
-                    break;
+                    Listing.createListing(sessionUser.getSinNumber(), inp[0], inp[1], inp[2], inp[3], inp[4], inp[5], inp[6]);
+                    continue;
 
                 default:
                     break;
                 }
 
             /* Hosts only */
-            if (!sessionUser.isHost()) {
+            if (!user.isHost(sessionUser.getSinNumber())) {
                 System.out.println("You currently aren't hosting any listings");
                 continue;
             }
 
             switch (choice) {
-                    case displayUserListings:
-                        /* TODO */
-                        break;
+                case displayUserListings:
+                    /* TODO */
+                    continue;
 
-                    case updateListing:
-                        /* TODO */
-                        break;
+                case updateListing:
+                    /* TODO */
+                    continue;
 
                 case updateAvailability:
-                    if (!sessionUser.isHost()) {
-                        System.out.println("No listings to update");
-                        break;
-                    }
-
                     fields = new String[] {"Listing Id"};
                     inp = SQLUtils.getInputArgs(fields);
                     Listing.setAvailableDateRange(inp[0]);
-                    break;
+                    continue;
 
-                    case updatePrice:
-                        /* TODO */
-                        break;
+                case updatePrice:
+                    /* TODO */
+                    continue;
 
-                    case deleteListing:
-                        /* TODO */
-                        break;
-                }
+                case deleteListing:
+                    /* TODO */
+                    continue;
+            }
         }
 
         input.close();

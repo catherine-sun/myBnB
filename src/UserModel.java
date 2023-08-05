@@ -8,13 +8,6 @@ public class UserModel {
     private String occupation;
     private String address;
     private Date dateOfBirth;
-    private Role role;
-
-    enum Role {
-        RENTER,
-        HOST,
-        BOTH
-    }
 
     public UserModel(String sinNumber, String fullName, String occupation, String address, Date dateOfBirth) {
         this.sinNumber = sinNumber;
@@ -22,7 +15,6 @@ public class UserModel {
         this.occupation = occupation;
         this.address = address;
         this.dateOfBirth = dateOfBirth;
-        this.role = null;
     }
 
     public UserModel (ResultSet rs) throws SQLException {
@@ -31,7 +23,6 @@ public class UserModel {
         this.occupation = rs.getString("occupation");
         this.address = rs.getString("address");
         this.dateOfBirth = rs.getDate("dateOfBirth");
-        this.role = null;
     }
 
     public String getSinNumber() { return sinNumber; }
@@ -39,21 +30,4 @@ public class UserModel {
     public String getOccupation() { return occupation; }
     public String getAddress() { return address; }
     public Date getDateOfBirth() { return dateOfBirth; }
-
-    public void setRole(String str) {
-        switch(str) {
-            case "Host":
-                role = isRenter() ? Role.BOTH : Role.HOST;
-                break;
-            case "Renter":
-                role = isHost() ? Role.BOTH : Role.RENTER;
-                break;
-            case "Reset" :
-                role = null;
-                break;
-        }
-    }
-
-    public boolean isHost() { return role == Role.HOST || role == Role.BOTH; }
-    public boolean isRenter() { return role == Role.RENTER || role == Role.BOTH; }
 }
