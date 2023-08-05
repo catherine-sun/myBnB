@@ -49,6 +49,7 @@ public class Booking extends DBTable {
         listing.setConnection(db);
         boolean datesAreAvailable = true;
 
+        int numDays = 0;
         while (startCalendar.compareTo(endCalendar) < 0) {
             String dateString = String.format("%d-%02d-%02d", startCalendar.get(Calendar.YEAR),
                 startCalendar.get(Calendar.MONTH) + 1, startCalendar.get(Calendar.DAY_OF_MONTH));
@@ -64,6 +65,7 @@ public class Booking extends DBTable {
                 if (startCalendar.get(Calendar.MONTH) == 0)
                     startCalendar.roll(Calendar.YEAR, true);
             }
+            numDays++;
         }
 
         if (datesAreAvailable) {
@@ -108,7 +110,7 @@ public class Booking extends DBTable {
             QueryResult res = db.execute(query, null, null);
             try {
                 res.rs.next();
-                price += res.rs.getDouble("totalPrice");
+                price += (res.rs.getDouble("totalPrice") * numDays);
             } catch (SQLException e) {
                 System.out.println("Error fetching the price for amenities");
             }
