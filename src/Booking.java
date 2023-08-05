@@ -71,8 +71,8 @@ public class Booking extends DBTable {
                     startCalendar.roll(Calendar.MONTH, true);
             }
 
-            String query = String.format("INSERT INTO %s (%s) VALUES (%d, '%s', '%s', '%s')",
-                BookingDB, "listingId, renterSin, startDate, endDate", listingIdNum, sin, start, end);  
+            String query = String.format("INSERT INTO %s (%s) VALUES (%d, '%s', '%s', '%s', %f)",
+                BookingDB, "listingId, renterSin, startDate, endDate, price", listingIdNum, sin, start, end, price);  
             
             db.executeUpdate(query, "Successfully booked listing from " + start + " to " + end, "There was a problem booking the listing"); 
             System.out.println("The total cost of stay is " + price);

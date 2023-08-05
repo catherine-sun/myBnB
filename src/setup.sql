@@ -42,6 +42,7 @@ CREATE TABLE Booking (
 	startDate DATE,
 	endDate DATE NOT NULL,
 	bookingStatus VARCHAR(17) NOT NULL,
+	price REAL CHECK (price >= 0),
 	PRIMARY KEY(listingId, renterSin, startDate),
 	FOREIGN KEY (listingId) REFERENCES Listing(listingId) ON DELETE CASCADE ON UPDATE CASCADE,
 	FOREIGN KEY (renterSin) REFERENCES User(sinNumber) ON DELETE CASCADE ON UPDATE CASCADE,
