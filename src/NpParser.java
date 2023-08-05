@@ -7,10 +7,13 @@ import edu.stanford.nlp.semgraph.SemanticGraph;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.util.PropertiesUtils;
 import edu.stanford.nlp.ling.IndexedWord;
+import edu.stanford.nlp.util.logging.RedwoodConfiguration;
 
 public class NpParser {
 
     public static ArrayList<NPhrase> parseNounPhrase(String text) {
+        // hide logs
+        RedwoodConfiguration.current().clear().apply();
         // set list of annotators to run
         Properties prop = PropertiesUtils.asProperties("annotators", "tokenize, ssplit, pos, lemma, parse");
         // build pipeline

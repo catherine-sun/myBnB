@@ -412,17 +412,21 @@ public class Reports extends DBTable {
 				}
 			}
 
+
 			Enumeration<String> k = texts.keys();
 			while (k.hasMoreElements()) {
 				String key = k.nextElement();
 
 				nPhrases = NpParser.parseNounPhrase(texts.get(key));
-				nPhrases.sort(null);
-				System.out.printf("\n%-10s %-40s\n", "Frequency", "Popular noun phrase from listing " + key);
-				System.out.println("-".repeat(48));
 
+				if (nPhrases.isEmpty()) {
+					continue;
+				}
+				nPhrases.sort(null);
+				System.out.printf("\n %-10s | %-40s\n", "Frequency", "Popular noun phrase from listing " + key);
+				System.out.println("-".repeat(48));
 				for (NPhrase np : nPhrases) {
-					System.out.printf("%-10d %-40s\n", np.getCount(), np.getNPhrase());
+					System.out.printf(" %-10d |  %-40s\n", np.getCount(), np.getNPhrase());
 				}
 				System.out.println();
 			}
