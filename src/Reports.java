@@ -1,4 +1,5 @@
 import java.sql.SQLException;
+import java.util.Calendar;
 import java.util.Scanner;
 
 public class Reports extends DBTable {
@@ -9,16 +10,17 @@ public class Reports extends DBTable {
 		final int numBookingsDateRange = 1;
 		final int numListingsLocation = 2;
 		final int rankHostsByNumListings = 3;
-
-		final int exitReport = 3;
+		final int rankRentersByNumBookings = 4;
+		final int exitReport = 5;
 
 		String reportsPrompt = String.format(
 			"******* Run a report *******\n"
 			+ "%2d - Total number of bookings for a specified date range\n"
 			+ "%2d - Total number of listings in a specified area\n"
 			+ "%2d - Rank hosts by total number of listings in a specified area\n"
+			+ "%2d - Rank renters by total number of bookings within a specified time range\n"
 			+ "%2d - Exit reports",
-			numBookingsDateRange, numListingsLocation, rankHostsByNumListings, 
+			numBookingsDateRange, numListingsLocation, rankHostsByNumListings, rankRentersByNumBookings,
 			exitReport);
 
 		String numBookingsDateRangePrompt = 
@@ -35,9 +37,15 @@ public class Reports extends DBTable {
 			+ "4. - Show All (No filter)";
 
 		String rankHostsPrompt = 
-			"******* Find Listings *******\n"
+			"******* Rank Hosts *******\n"
 			+ "1. - By Country\n"
 			+ "2. - By Country and City\n"
+			+ "3. - Show All (No filter)";
+
+		String rankRentersPrompt = 
+			"******* Rank Renters *******\n"
+			+ "1. - In a time period\n"
+			+ "2. - In a time period per city\n"
 			+ "3. - Show All (No filter)";
 
 		String[] fields, inp;
@@ -101,6 +109,24 @@ public class Reports extends DBTable {
 						System.arraycopy(fields, 0, inp, 0, reportChoice);
 						inp = SQLUtils.getInputArgs(inp);
 						rankHostsByListing(inp, reportChoice);
+					} else {
+						System.out.println("Invalid choice");
+					}
+					break;
+
+				case rankRentersByNumBookings:
+					System.out.println(rankRentersPrompt);
+					System.out.print(": ");	
+					reportChoice = input.nextInt();
+					input.nextLine();
+					if (reportChoice == 3) {
+						rankRentersByBooking(null, null, null);
+					} else if (reportChoice <= 2 && reportChoice >= 1) {
+						fields = new String[] {"Start of date range", "End of date range", "City"};
+						inp = new String[reportChoice + 1];
+						System.arraycopy(fields, 0, inp, 0, reportChoice + 1);
+						inp = SQLUtils.getInputArgs(inp);
+						rankRentersByBooking(inp[0], inp[1], reportChoice == 1 ? null : inp[2]);
 					} else {
 						System.out.println("Invalid choice");
 					}
@@ -195,10 +221,47 @@ public class Reports extends DBTable {
 
 		try {
 			int num = 1;
+			String str = "";
 			while (res.rs.next() && num <= 10) {
-				System.out.println(num + ". " + res.rs.getString("fullName") + " with " + res.rs.getInt("count") + " listing(s)");
+				str += num + ". " + res.rs.getString("fullName") + " with " + res.rs.getInt("count") + " listing(s)\n";
 				num++;
 			}
+			printReport(str.trim());
+		} catch (SQLException e) {
+			System.out.println(e.getMessage());
+		}
+	}
+
+	public static void rankRentersByBooking (String startDate, String endDate, String city) {
+
+		String query = String.format("SELECT fullName, COUNT(*) as count FROM Booking NATURAL JOIN Listing INNER JOIN User ON renterSin = sinNumber WHERE bookingStatus = '%s'", Booking.STATUS_OK);
+		
+		if (startDate != null) {
+			query += String.format(" AND ((startDate <= '%s' AND endDate > '%s') OR (startDate <= '%s' AND endDate > '%s') " +
+					"OR (startDate >= '%s' AND endDate < '%s') OR (endDate >= '%s' AND startDate < '%s'))",
+				startDate, endDate, startDate, startDate, startDate, endDate, endDate, endDate);
+		}
+
+		if (city != null) {
+			Calendar today = Calendar.getInstance();
+			String startOfYear = String.format("%d-01-01", today.get(Calendar.YEAR));
+			String todayYear = String.format("%d-%02d-%02d", today.get(Calendar.YEAR), today.get(Calendar.MONTH) + 1, today.get(Calendar.DATE));
+			query += String.format("AND endDate >= '%s' AND startDate <= '%s' AND city = '%s' GROUP BY renterSin HAVING COUNT(*) >= 2 ORDER BY COUNT(*) DESC", 
+				startOfYear, todayYear, city);
+		} else {
+			query += " GROUP BY renterSin ORDER BY COUNT(*) DESC";
+		}
+
+		QueryResult res = db.execute(query, null, null);
+
+		try {
+			int num = 1;
+			String str = "";
+			while (res.rs.next() && num <= 10) {
+				str += num + ". " + res.rs.getString("fullName") + " with " + res.rs.getInt("count") + " booking(s)\n";
+				num++;
+			}
+			printReport(str.trim());
 		} catch (SQLException e) {
 			System.out.println(e.getMessage());
 		}
