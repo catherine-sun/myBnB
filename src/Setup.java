@@ -89,8 +89,8 @@ public class Setup {
             startCalendar.get(Calendar.MONTH) + 1, startCalendar.get(Calendar.DAY_OF_MONTH));
 
             for (int i = 1; i <= 12; i++) {
-                String query = String.format("INSERT INTO %s (%s) VALUES (%d, '%s')",
-                    DBTable.AvailableDateDB, "listingId, startDate",  i, dateString);
+                String query = String.format("INSERT INTO %s (%s) VALUES (%d, '%s', %f)",
+                    DBTable.AvailableDateDB, "listingId, startDate, price",  i, dateString, (double) Math.round(Math.random() * 17000) / 100 + 40);
 
                     DBTable.db.executeUpdate(query, null, null);
             }
@@ -157,7 +157,7 @@ public class Setup {
         Booking.bookListing("266666662", "12", "2023-09-14", "2023-09-17");
         Booking.bookListing("277777772", "12", "2023-11-27", "2023-11-29");
         Booking.bookListing("277777772", "12", "2023-11-29", "2023-11-30");
-        Booking.bookListing("277777772", "12", "2023-09-29", "2024-09-30");
+        Booking.bookListing("277777772", "12", "2023-09-29", "2023-09-30");
         Booking.bookListing("277777772", "12", "2023-10-01", "2023-10-02");
         Booking.bookListing("277777772", "12", "2023-10-02", "2023-10-04");
         Booking.bookListing("277777772", "12", "2023-10-04", "2023-10-07");
