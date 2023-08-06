@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Searching {
@@ -62,28 +63,58 @@ public class Searching {
                     break;
 
                 case clear:
+                    int i;
                     do {
-                        int i = 1;
-                        String options = (type == null ? "" : i + " - Property Type\n")
-                            + (pCode == null ? "" : i++ + " - Postal Code\n")
-                            + (city == null ? "" : i++ + " - City\n")
-                            + (country == null ? "" : i++ + " - Country\n")
-                            + i++ + " - Clear all\n"
-                            + i++ + " - Done\n"
-                            + "Enter the field to clear: ";
+                        i = 1;
+                        String opt = "";
+                        ArrayList<String> optArr = new ArrayList<>();
 
-                        System.out.println(options);
+                        if (type != null) {
+                            opt += String.format ("%d - Property Type\n", i);
+                            optArr.add("Property Type");
+                            i++;
+                        }
+
+                        if (pCode != null) {
+                            opt += String.format ("%d - Postal Code\n", i);
+                            optArr.add("Postal Code");
+                            i++;
+                        }
+
+                        if (city != null) {
+                            opt += String.format ("%d - City\n", i);
+                            optArr.add("City");
+                            i++;
+                        }
+
+                        if (country != null) {
+                            opt += String.format ("%d - Country\n", i);
+                            optArr.add("Country");
+                            i++;
+                        }
+
+                        opt += i + " - Clear all\n";
+                        i++;
+                        opt += i + " - Done\nEnter the field to clear: ";
+
+                        System.out.println(opt);
 
                         choice = input.nextInt();
                         input.nextLine();
 
-                        if (choice < 0 || choice > i) continue;
+                        if (choice < 0 || choice >= i) continue;
 
-                        fields = new String[]{"Property Type", "Postal Code", "City", "Country", "Done"};
-                        inp = SQLUtils.getInputArgs(new String[] {fields[choice - 1]});
-                        updateFilter(fields[choice - 1], inp[0]);
+                        if (choice == i - 1) {
+                            type = null;
+                            pCode = null;
+                            city = null;
+                            country = null;
+                            break;
+                        }
 
-                    } while (choice != 5);
+                        updateFilter(optArr.get(choice - 1), null);
+
+                    } while (choice != i);
                     choice = maximize;
                     break;
 
