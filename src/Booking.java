@@ -144,7 +144,7 @@ public class Booking extends DBTable {
                 
                 db.executeUpdate(query, "Rating created", "There was a problem rating this booking");
             } else {
-                System.out.println("You have had no bookings for this listing for " + startDate);
+                System.out.println("You have had no booking(s) for this listing for " + startDate);
             }
         } catch (Exception e) {
             System.out.println(e.getMessage());
