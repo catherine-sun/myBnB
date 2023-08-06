@@ -276,7 +276,7 @@ public class Reports extends DBTable {
 
 	public static void rankUsersByCancellations () {
 		/* Rank hosts */
-
+		
 		try {
 			String query = String.format("SELECT fullName, COUNT(*) as count FROM Booking NATURAL JOIN Posting INNER JOIN User on hostSin = sinNumber" +
 				" WHERE bookingStatus = '%s' GROUP BY hostSin ORDER BY COUNT(*) DESC", Booking.STATUS_CANCELLED_HOST);

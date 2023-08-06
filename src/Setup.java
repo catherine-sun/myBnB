@@ -8,6 +8,7 @@ public class Setup {
     public static void main (String[] args) {
         Scanner input = new Scanner(System.in);
         DBConnection db = new DBConnection();
+        System.out.println("SETUP DATA");
         String dbName, usr, pwd;
         do {
             System.out.print("Enter database: ");
