@@ -11,16 +11,19 @@ public class Reports extends DBTable {
 		final int numListingsLocation = 2;
 		final int rankHostsByNumListings = 3;
 		final int rankRentersByNumBookings = 4;
-		final int exitReport = 5;
+		final int rankUsersByCancellations = 5;
+
+		final int exitReport = 6;
 
 		String reportsPrompt = String.format(
 			"******* Run a report *******\n"
 			+ "%2d - Total number of bookings for a specified date range\n"
 			+ "%2d - Total number of listings in a specified area\n"
-			+ "%2d - Rank hosts by total number of listings in a specified area\n"
-			+ "%2d - Rank renters by total number of bookings within a specified time range\n"
+			+ "%2d - Rank hosts by number of listings in a specified area\n"
+			+ "%2d - Rank renters by number of bookings within a specified time range\n"
+			+ "%2d - Rank hosts and renters by number of booking cancellations\n"
 			+ "%2d - Exit reports",
-			numBookingsDateRange, numListingsLocation, rankHostsByNumListings, rankRentersByNumBookings,
+			numBookingsDateRange, numListingsLocation, rankHostsByNumListings, rankRentersByNumBookings, rankUsersByCancellations,
 			exitReport);
 
 		String numBookingsDateRangePrompt = 
@@ -130,6 +133,10 @@ public class Reports extends DBTable {
 					} else {
 						System.out.println("Invalid choice");
 					}
+					break;
+
+				case rankUsersByCancellations:
+					rankUsersByCancellations();
 					break;
 			}
 		}
@@ -262,6 +269,38 @@ public class Reports extends DBTable {
 				num++;
 			}
 			printReport(str.trim());
+		} catch (SQLException e) {
+			System.out.println(e.getMessage());
+		}
+	}
+
+	public static void rankUsersByCancellations () {
+		/* Rank hosts */
+
+		try {
+			String query = String.format("SELECT fullName, COUNT(*) as count FROM Booking NATURAL JOIN Posting INNER JOIN User on hostSin = sinNumber" +
+				" WHERE bookingStatus = '%s' GROUP BY hostSin ORDER BY COUNT(*) DESC", Booking.STATUS_CANCELLED_HOST);
+
+			QueryResult res = db.execute(query, null, null);
+
+			String str = "******* Rank Hosts By Cancellations *******\n";
+			for (int num = 1; num <= 10 && res.rs.next(); num++) {
+				str += num + ". " + res.rs.getString("fullName") + " with " + res.rs.getInt("count") + " cancellation(s)\n";
+			}
+			printReport(str.trim());
+			
+			query = String.format("SELECT fullName, COUNT(*) as count FROM Booking INNER JOIN User ON renterSin = sinNumber" +
+				" WHERE bookingStatus = '%s' GROUP BY renterSin ORDER BY COUNT(*) DESC", Booking.STATUS_CANCELLED_RENTER);
+
+			res = db.execute(query, null, null);
+
+			str = "******* Rank Renters By Cancellations *******\n";
+
+			for (int num = 1; num <= 10 && res.rs.next(); num++) {
+				str += num + ". " + res.rs.getString("fullName") + " with " + res.rs.getInt("count") + " cancellation(s)\n";
+			}
+			printReport(str.trim());
+			
 		} catch (SQLException e) {
 			System.out.println(e.getMessage());
 		}
