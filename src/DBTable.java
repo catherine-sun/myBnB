@@ -9,6 +9,8 @@ public abstract class DBTable {
     public static final String AvailableDateDB = "AvailableDate";
     public static final String RatingDB = "Rating";
 
+    public static boolean dev = false;
+
     public static DBConnection db;
 
     public void setConnection (DBConnection db) {

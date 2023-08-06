@@ -8,7 +8,7 @@ public class Booking extends DBTable {
     public static final String STATUS_OK = "OK";
     public static final String STATUS_CANCELLED_RENTER = "CANCELLED BY RENTER";
     public static final String STATUS_CANCELLED_HOST = "CANCELLED BY HOST";
-
+   
     public static void bookListing (String sin, String listingId, String start, 
         String end) {
         
@@ -46,51 +46,17 @@ public class Booking extends DBTable {
 
         Listing listing = new Listing();
         listing.setConnection(db);
-
         boolean datesAreAvailable = true;
-        while (startCalendar.compareTo(endCalendar) < 1) {
-            String dateString = String.format("%d-%d-%d", startCalendar.get(Calendar.YEAR),
-                startCalendar.get(Calendar.MONTH) + 1, startCalendar.get(Calendar.DAY_OF_MONTH));
 
-            if (!Listing.listingIsAvailable(listingIdNum, dateString)) {
-                datesAreAvailable = false;
-                System.out.println("The selected listing is not available for the date " + dateString);
-            }
-
-            startCalendar.roll(Calendar.DATE, true);
-            if (startCalendar.get(Calendar.DATE) == 1) {
-                startCalendar.roll(Calendar.MONTH, true);
-                if (startCalendar.get(Calendar.MONTH) == 0)
-                    startCalendar.roll(Calendar.YEAR, true);
-            }
-        }
-
-        if (datesAreAvailable) {
-            startCalendar.setTime(startDate);
-            endCalendar.setTime(endDate);
-
-            double price = 0;
-            while (startCalendar.compareTo(endCalendar) < 0) {
-                String dateString = String.format("%d-%02d-%02d", startCalendar.get(Calendar.YEAR),
+        if (!dev) {
+            while (startCalendar.compareTo(endCalendar) < 1) {
+                String dateString = String.format("%d-%d-%d", startCalendar.get(Calendar.YEAR),
                     startCalendar.get(Calendar.MONTH) + 1, startCalendar.get(Calendar.DAY_OF_MONTH));
- 
-                     
-                query = String.format("SELECT price FROM %s WHERE listingId = %d AND startDate = '%s'",
-                    AvailableDateDB, listingIdNum, dateString);  
-                
-                QueryResult res = db.execute(query, null, null);
 
-                try {
-                    res.rs.next();
-                    price += res.rs.getDouble("price");
-                } catch (SQLException e) {
-                    System.out.println("Error fetching the price for " + dateString);
+                if (!Listing.listingIsAvailable(listingIdNum, dateString)) {
+                    datesAreAvailable = false;
+                    System.out.println("The selected listing is not available for the date " + dateString);
                 }
-
-                query = String.format("DELETE FROM %s WHERE listingId = %d AND startDate = '%s'",
-                    AvailableDateDB, listingIdNum, dateString);   
-                
-                db.executeUpdate(query, null, null);
 
                 startCalendar.roll(Calendar.DATE, true);
                 if (startCalendar.get(Calendar.DATE) == 1) {
@@ -98,6 +64,46 @@ public class Booking extends DBTable {
                     if (startCalendar.get(Calendar.MONTH) == 0)
                         startCalendar.roll(Calendar.YEAR, true);
                 }
+            }
+        }
+        if (datesAreAvailable) {
+            startCalendar.setTime(startDate);
+            endCalendar.setTime(endDate);
+
+            double price = 0;
+            if (!dev) {
+                while (startCalendar.compareTo(endCalendar) < 0) {
+                    String dateString = String.format("%d-%02d-%02d", startCalendar.get(Calendar.YEAR),
+                        startCalendar.get(Calendar.MONTH) + 1, startCalendar.get(Calendar.DAY_OF_MONTH));
+    
+                    
+                        
+                    query = String.format("SELECT price FROM %s WHERE listingId = %d AND startDate = '%s'",
+                        AvailableDateDB, listingIdNum, dateString);  
+                    
+                    QueryResult res = db.execute(query, null, null);
+
+                    try {
+                        res.rs.next();
+                        price += res.rs.getDouble("price");
+                    } catch (SQLException e) {
+                        System.out.println("Error fetching the price for " + dateString);
+                    }
+
+                    query = String.format("DELETE FROM %s WHERE listingId = %d AND startDate = '%s'",
+                        AvailableDateDB, listingIdNum, dateString);   
+                    
+                    db.executeUpdate(query, null, null);
+
+                    startCalendar.roll(Calendar.DATE, true);
+                    if (startCalendar.get(Calendar.DATE) == 1) {
+                        startCalendar.roll(Calendar.MONTH, true);
+                        if (startCalendar.get(Calendar.MONTH) == 0)
+                            startCalendar.roll(Calendar.YEAR, true);
+                    }
+                }
+            } else {
+                price = Math.round(Math.random() * 54400 + 40) / 100;
             }
 
             query = String.format("INSERT INTO %s (%s) VALUES (%d, '%s', '%s', '%s', %f, '%s')",

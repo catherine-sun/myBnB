@@ -8,14 +8,18 @@ public class Reports extends DBTable {
 
 		final int numBookingsDateRange = 1;
 		final int numListingsLocation = 2;
+		final int rankHostsByNumListings = 3;
+
 		final int exitReport = 3;
 
 		String reportsPrompt = String.format(
 			"******* Run a report *******\n"
 			+ "%2d - Total number of bookings for a specified date range\n"
-			+ "%2d - Total number of listings for a specified date range\n"
+			+ "%2d - Total number of listings in a specified area\n"
+			+ "%2d - Rank hosts by total number of listings in a specified area\n"
 			+ "%2d - Exit reports",
-			numBookingsDateRange, numListingsLocation, exitReport);
+			numBookingsDateRange, numListingsLocation, rankHostsByNumListings, 
+			exitReport);
 
 		String numBookingsDateRangePrompt = 
 			"******* Find Bookings *******\n"
@@ -29,6 +33,12 @@ public class Reports extends DBTable {
 			+ "2. - By Country and City\n"
 			+ "3. - By Country, City and Postal Code\n"
 			+ "4. - Show All (No filter)";
+
+		String rankHostsPrompt = 
+			"******* Find Listings *******\n"
+			+ "1. - By Country\n"
+			+ "2. - By Country and City\n"
+			+ "3. - Show All (No filter)";
 
 		String[] fields, inp;
 		int choice = numBookingsDateRange, reportChoice;
@@ -76,6 +86,25 @@ public class Reports extends DBTable {
 					} else {
 						System.out.println("Invalid choice");
 					}
+					break;
+				
+				case rankHostsByNumListings:
+					System.out.println(rankHostsPrompt);
+					System.out.print(": ");	
+					reportChoice = input.nextInt();
+					input.nextLine();
+					if (reportChoice == 3) {
+						rankHostsByListing(new String[]{}, 0);
+					} else if (reportChoice <= 2 && reportChoice >= 1) {
+						fields = new String[] {"Country", "City"};
+						inp = new String[reportChoice];
+						System.arraycopy(fields, 0, inp, 0, reportChoice);
+						inp = SQLUtils.getInputArgs(inp);
+						rankHostsByListing(inp, reportChoice);
+					} else {
+						System.out.println("Invalid choice");
+					}
+					break;
 			}
 		}
 	}
@@ -130,9 +159,10 @@ public class Reports extends DBTable {
 		String [] possibleFilters = new String[] {"Country", "City", "PostalCode"};
 
 		String query = "SELECT COUNT(*) as count FROM Listing INNER JOIN Posting ON " +
-			"Listing.listingId = Posting.listingId WHERE ";
+			"Listing.listingId = Posting.listingId";
 
 		for (int i = 0; i < numFilters; i++){
+			if (i == 0) query += " WHERE ";
 			query += possibleFilters[i] + " = '" + loc[i] + "'";
 			if (i < numFilters - 1) query += " AND ";
 		}
@@ -143,6 +173,32 @@ public class Reports extends DBTable {
 			res.rs.next();
 			int numBookings = res.rs.getInt("count");
 			printReport("There are " + numBookings + " listings in the selected area");
+		} catch (SQLException e) {
+			System.out.println(e.getMessage());
+		}
+	}
+
+	public static void rankHostsByListing (String [] loc, int numFilters) {
+		String [] possibleFilters = new String[] {"Country", "City"};
+
+		String query = "SELECT fullName, hostSin, COUNT(*) as count FROM Posting NATURAL JOIN Listing INNER JOIN User ON hostSin = sinNumber";
+
+		for (int i = 0; i < numFilters; i++){
+			if (i == 0) query += " WHERE ";
+			query += possibleFilters[i] + " = '" + loc[i] + "'";
+			if (i < numFilters - 1) query += " AND ";
+		}
+
+		query += " GROUP BY hostSin ORDER BY COUNT(*) DESC";
+
+		QueryResult res = db.execute(query, null, null);
+
+		try {
+			int num = 1;
+			while (res.rs.next() && num <= 10) {
+				System.out.println(num + ". " + res.rs.getString("fullName") + " with " + res.rs.getInt("count") + " listing(s)");
+				num++;
+			}
 		} catch (SQLException e) {
 			System.out.println(e.getMessage());
 		}

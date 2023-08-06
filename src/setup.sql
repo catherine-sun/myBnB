@@ -1,7 +1,7 @@
 CREATE TABLE User (
 	sinNumber CHAR(9) PRIMARY KEY,
 	fullName VARCHAR(30) NOT NULL,
-	occupation VARCHAR(15),
+	occupation VARCHAR(50),
 	address VARCHAR(50),
 	dateOfBirth DATE
 );
@@ -83,3 +83,37 @@ CREATE TABLE AvailableDate (
 	PRIMARY KEY(listingId, startDate),
 	FOREIGN KEY (listingId) REFERENCES Listing(listingId) ON DELETE CASCADE ON UPDATE CASCADE
 );
+
+/*CREATE TABLE User (
+	sinNumber CHAR(9) PRIMARY KEY,
+	fullName VARCHAR(30) NOT NULL,
+	occupation VARCHAR(15),
+	address VARCHAR(50),
+	dateOfBirth DATE
+);*/
+/*INSERT INTO User (sinNumber, fullName, occupation, address, dateOfBirth) VALUES ('101010101', 'John Smith', 'Professor', NULL, 1983-09-23);
+INSERT INTO User (sinNumber, fullName, occupation, address, dateOfBirth) VALUES ('122222221', 'Catherine Sun', 'Software Engineer', '25 Arbutus Crescent', 2003-07-09);
+INSERT INTO User (sinNumber, fullName, occupation, address, dateOfBirth) VALUES ('133333331', 'Christine Zhao', 'Junior Full Stack Developer', '21 Waymount Avenue', 2003-05-15);
+INSERT INTO User (sinNumber, fullName, occupation, address, dateOfBirth) VALUES ('144444441', 'Patricia Smith', NULL, NULL, NULL);
+INSERT INTO User (sinNumber, fullName, occupation, address, dateOfBirth) VALUES ('155555551', 'Uncle Tetsu', 'Chef', NULL, NULL);
+INSERT INTO User (sinNumber, fullName, occupation, address, dateOfBirth) VALUES ('166666661', 'Eric Corlett', 'Professor', NULL, NULL);
+INSERT INTO User (sinNumber, fullName, occupation, address, dateOfBirth) VALUES ('177777771', 'Nick Koudas', 'Professor', NULL, 1983-09-23);
+INSERT INTO User (sinNumber, fullName, occupation, address, dateOfBirth) VALUES ('188888881', 'Bianca Schroeder', 'Professor', NULL, 1983-09-23);*/
+/*CREATE TABLE Renter (
+	sinNumber CHAR(9) PRIMARY KEY,
+	paymentInfo VARCHAR(30),
+	FOREIGN KEY (sinNumber) REFERENCES User(sinNumber) ON DELETE CASCADE ON UPDATE CASCADE
+);*/
+/*CREATE TABLE Host (
+	sinNumber CHAR(9) PRIMARY KEY,
+	FOREIGN KEY (sinNumber) REFERENCES User(sinNumber) ON DELETE CASCADE ON UPDATE CASCADE
+);*/
+/*INSERT INTO Renter (sinNumber, paymentInfo) VALUES ('101010101', 'Card: 3245-435-435-1233');
+INSERT INTO Renter (sinNumber, paymentInfo) VALUES ('122222221', NULL);
+INSERT INTO Renter (sinNumber, paymentInfo) VALUES ('133333331', NULL);
+INSERT INTO Renter (sinNumber, paymentInfo) VALUES ('144444441', 'Card: 0000-435-435-1233');
+
+INSERT INTO Host (sinNumber) VALUES ('155555551');
+INSERT INTO Host (sinNumber) VALUES ('166666661');
+INSERT INTO Host (sinNumber) VALUES ('177777771');
+INSERT INTO Host (sinNumber) VALUES ('188888881');*/
