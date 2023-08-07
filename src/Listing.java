@@ -5,15 +5,19 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Scanner;
+import java.util.Arrays;
 
 public class Listing extends DBTable {
 
-    public static final String[] amenities = new String[]{
+    public static final ArrayList<String> amenities = new ArrayList<String>(Arrays.asList(new String[]{
         "Wifi", "Kitchen", "Washer", "Dryer", "Air conditioning", "Heating", "Dedicated workspace", "TV", "Hair dryer", "Iron", // Essentials
         "Pool", "Hot tub", "Free parking", "EV Charger", "Crib", "Gym", "BBQ grill", "Breakfast", "Indoor fireplace", "Smoking allowed", // Features
         "Beachfront", "Waterfront", // Location
         "Smoke alarm", "Carbon monoxide alarm" // Safety
-    };
+    }));
+
+    public static String[] amenitiesByPopularity = null;
+
     public static boolean validateListingId (int listingIdNum) {
         String query = String.format("SELECT * FROM %s WHERE listingId = %d",
             PostingDB, listingIdNum);
@@ -92,16 +96,18 @@ public class Listing extends DBTable {
             System.out.println(e.getMessage());
         }
 
-        double suggestedPrice = getSuggestedListingPrice(country, city);
-        if (suggestedPrice >= 0) {
-            System.out.println("The suggested listing price for this area is $" + suggestedPrice);
-        } else {
-            System.out.println("There are not enough listings in this area to calculate a suggested base price");
-        }
-
         if (!dev) {
             selectAmenities(listingId);
+            double suggestedPrice = getSuggestedListingPrice(country, city);
+            if (suggestedPrice > 0) {
+                System.out.println("The suggested listing price for this area is $" + suggestedPrice);
+            } else {
+                System.out.println("There are not enough listings in this area to calculate a suggested base price");
+            }            
+            setAvailableDateRange(sin, String.valueOf(listingId), true);
         }
+
+
     }
 
     public static void selectAmenities (int listingId) {
@@ -109,18 +115,29 @@ public class Listing extends DBTable {
         int choice = 0;
 
         ArrayList<Integer> selectedChoices = new ArrayList<Integer>();
-
+        if (amenitiesByPopularity == null) {
+            amenitiesByPopularity = new String[amenities.size()];
+            String query = "SELECT amenityName FROM Amenity LEFT JOIN ProvidedAmenity ON Amenity.itemId = ProvidedAmenity.itemId GROUP BY amenityName ORDER BY COUNT(*) DESC";
+            QueryResult amenitiesByFreqResult = db.execute(query, null, null);
+            try {
+                for (int i = 0; i < amenitiesByPopularity.length && amenitiesByFreqResult.rs.next(); i++) {
+                    amenitiesByPopularity[i] = amenitiesByFreqResult.rs.getString("amenityName");
+                }
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
+            }
+        }
         do {
-            String str = "\n";
+            String str = "Possible Amenities (Ordered By Popularity)\n";
             double price;
             System.out.printf("\n%28s %-20s", "", "Suggested additional price");
-            for (int i = 0; i < amenities.length; i++) {
+            for (int i = 0; i < amenitiesByPopularity.length; i++) {
                 if (!selectedChoices.contains(Integer.valueOf(i + 1))) {
-                    str += String.format("%2d. %-30s %20s\n", i + 1, amenities[i],
-                    (price = getSuggestedAmenityPrice(amenities[i])) > 0 ? "$" + Math.round(price*100)/100.00 : "-");
+                    str += String.format("%2d. %-30s %20s\n", i + 1, amenitiesByPopularity[i],
+                    (price = getSuggestedAmenityPrice(amenitiesByPopularity[i])) > 0 ? "$" + Math.round(price*100)/100.00 : "-");
                 }
             }
-            str += String.format("%2d. Done\n", amenities.length + 1);
+            str += String.format("%2d. Done\n", amenitiesByPopularity.length + 1);
             System.out.println(str);
             System.out.println("Enter the amenity provided by this listing (type in comma-separated list of numbers):");
             System.out.print(": ");
@@ -129,23 +146,23 @@ public class Listing extends DBTable {
             for (String s : inp) {
                 choice = Integer.parseInt(s);
                 if (selectedChoices.contains(choice)) {
-                    System.out.println(amenities[choice - 1] + " already added");
+                    System.out.println(amenitiesByPopularity[choice - 1] + " already added");
                     continue;
                 }
-                if (choice >= 1 && choice <= amenities.length) {
-                    System.out.println("Enter the price of " + amenities[choice - 1] + ":");
+                if (choice >= 1 && choice <= amenitiesByPopularity.length) {
+                    System.out.println("Enter the price of " + amenitiesByPopularity[choice - 1] + ":");
                     System.out.print(": ");
                     price = input.nextDouble();
                     input.nextLine();
                     String query = String.format("INSERT INTO ProvidedAmenity (itemId, listingId, price) VALUES (%d, %d, %f)",
-                        choice, listingId, price);
-                    db.executeUpdate(query, "Successfully added " + amenities[choice - 1] + " with a price of " + price, "Error adding amenity");
+                        amenities.indexOf(amenitiesByPopularity[choice - 1]) + 1, listingId, price);
+                    db.executeUpdate(query, "Successfully added " + amenitiesByPopularity[choice - 1] + " (id=" +( amenities.indexOf(amenitiesByPopularity[choice - 1]) + 1) + ") with a price of " + price, "Error adding amenity");
                     selectedChoices.add(Integer.valueOf(choice));
-                } else if (choice != amenities.length + 1) {
+                } else if (choice != amenitiesByPopularity.length + 1) {
                     System.out.println("Invalid choice");
                 }
             }
-        } while (choice != amenities.length + 1);
+        } while (choice != amenitiesByPopularity.length + 1);
     }
 
     public static void setAvailableDateSingle (String sin, String listingId, boolean available)
@@ -154,7 +171,7 @@ public class Listing extends DBTable {
         if (!validateListingId(listingIdNum)) return;
         if (!validateListingId(listingIdNum, sin)) return;
 
-        String [] fields = available ? new String[]{"Date to set as available", "Price"} : new String[]{"Date to set as unavailable"};
+        String [] fields = available ? new String[]{"Date to set listing as available", "Price"} : new String[]{"Date to set listing as unavailable"};
         String [] inputs = SQLUtils.getInputArgs(fields);
         if (available) {
             String bookingQuery = String.format("SELECT * FROM %s WHERE listingId = %d AND startDate <= '%s' AND endDate > '%s' AND bookingStatus = '%s'",
@@ -179,7 +196,6 @@ public class Listing extends DBTable {
             String query1 = String.format("DELETE FROM %s WHERE listingId = '%s' AND startDate = '%s'",
                 AvailableDateDB, listingIdNum, inputs[0]);
             db.executeUpdate(query1, "Successfully made listing unavailable", "Error making listing unavailable");
-
         }
 
     }
@@ -189,8 +205,8 @@ public class Listing extends DBTable {
         if (!validateListingId(listingIdNum)) return;
         if (!validateListingId(listingIdNum, sin)) return;
         String [] fields = available ?
-            new String[]{"Start of date range to set as available", "End of date range to set as available", "Price"}
-            : new String[]{"Start of date range to set as unavailable", "End of date range to set as unavailable"};
+            new String[]{"Start of date range to set listing as available", "End of date range to set listing as available", "Price"}
+            : new String[]{"Start of date range to set listing as unavailable", "End of date range to set listing as unavailable"};
         String[] inputs = SQLUtils.getInputArgs(fields);
         Date startDate = Date.valueOf(inputs[0]);
         Date endDate = Date.valueOf(inputs[1]);
@@ -357,6 +373,7 @@ public class Listing extends DBTable {
             if (res.rs != null) {
                 if (res.rs.next()) {
                     price = res.rs.getDouble("price");
+                    price = Math.round(price * 100) / 100;
                 }
             }
         } catch (SQLException e) {
