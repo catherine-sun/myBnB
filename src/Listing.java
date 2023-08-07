@@ -122,7 +122,7 @@ public class Listing extends DBTable {
             }
             str += String.format("%2d. Done\n", amenities.length + 1);
             System.out.println(str);
-            System.out.println("Enter the amenity provided by this listing (type in comma-separated list of numbers):");
+            System.out.println("Enter the amenity provided by this listing:");
             System.out.print(": ");
 
             String[] inp = input.nextLine().replaceAll(" ", "").split(",");
