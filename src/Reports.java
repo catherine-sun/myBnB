@@ -203,7 +203,7 @@ public class Reports extends DBTable {
 		String[] dates = SQLUtils.getInputArgs(fields);
 
 		String query = String.format("SELECT COUNT(*) as count FROM Booking INNER JOIN Posting ON " +
-			"Booking.listingId = Posting.listingId WHERE ((startDate <= '%s' AND endDate > '%s') OR (startDate <= '%s' AND endDate > '%s') " +
+			"Booking.listingId = Posting.listingId INNER JOIN Listing ON Listing.listingId = Booking.listingId WHERE ((startDate <= '%s' AND endDate > '%s') OR (startDate <= '%s' AND endDate > '%s') " +
 				"OR (startDate >= '%s' AND endDate < '%s') OR (endDate >= '%s' AND startDate < '%s')) " +
 				" AND bookingStatus = '%s' AND %s = '%s'",
 			dates[0], dates[1], dates[0], dates[0], dates[0], dates[1], dates[1], dates[1], Booking.STATUS_OK, field, value);
@@ -354,7 +354,7 @@ public class Reports extends DBTable {
 		String[] filters = new String[] {"Country", "City"};
 		String filter = numFilters > 0 ? "WHERE " : "";
 		for (int i = 0; i < numFilters; i++) {
-			filter += filters[0] + " = '" + filterInputs[0] +"'";
+			filter += filters[i] + " = '" + filterInputs[i] +"'";
 			if (i != numFilters - 1) filter += " AND ";
 		}
 		String query = String.format("SELECT hostSin, fullName, COUNT(*) as count, totalCount FROM Posting INNER JOIN Listing ON Posting.listingId = Listing.listingId"
