@@ -81,14 +81,6 @@ public class App {
         final int updatePrice = 19;
         final int deleteListing = 20;
 
-        String loginPrompt = sessionUser == null ?
-            String.format("You are currently not signed in\n"
-            + "%2d - Log in\n"
-            + "%2d - Create a new account",
-            newSession, createUser)
-            : "You are currenlty signed in as "
-            + sessionUser.getFullName();
-
         String prompt = String.format(
             "******* Welcome to myBnB! *******\n"
             + "%2d - Log in\n"
@@ -126,10 +118,6 @@ public class App {
             createListing, displayUserListings, updateAvailability, updatePrice,
             deleteListing, start);
 
-        //User user = new User();
-        //user.setConnection(db);
-        //Listing listing = new Listing();
-        //listing.setConnection(db);
         DBTable.db = db;
         String[] inp, fields;
         String sin;
@@ -235,14 +223,12 @@ public class App {
                     if (!User.isRenter(sin)) {
                         User.createRenter(sin);
                     }
-                    /* TODO */
                     fields = new String[]{"Listing ID", "Start date", "End date"};
                     inp = SQLUtils.getInputArgs(fields);
                     Booking.bookListing(sin, inp[0], inp[1], inp[2]);
                     continue;
 
                 case cancelBooking:
-                    /* TODO */
                     sin = sessionUser.getSinNumber();
                     System.out.println("Enter 1 if you are the renter, 2 if you are the host: ");
                     renterOrHost = input.nextInt();
@@ -253,7 +239,6 @@ public class App {
                     continue;
 
                 case rate:
-                    /* TODO */
                     System.out.println("Enter 1 if you are the renter, 2 if you are the host: ");
                     renterOrHost = input.nextInt();
                     input.nextLine();
@@ -292,7 +277,6 @@ public class App {
                     if (!User.isRenter(sin)) {
                         User.createRenter(sin);
                     }
-                    /* TODO */
                     fields = new String[] {"Payment Info"};
                     inp = SQLUtils.getInputArgs(fields);
                     User.addPaymentInfo(sin, inp[0]);
@@ -303,7 +287,6 @@ public class App {
                     if (!User.isRenter(sin)) {
                         System.out.println("Empty");
                     }
-                    /* TODO */
                     continue;
 
                 case deleteUser:
@@ -329,7 +312,6 @@ public class App {
 
             switch (choice) {
                 case displayUserListings:
-                    /* TODO */
                     continue;
 
                 case updateAvailability:
@@ -345,7 +327,6 @@ public class App {
                     continue;
 
                 case updatePrice:
-                    /* TODO */
                     sin = sessionUser.getSinNumber();
                     fields = new String[] {"Listing Id", "Start of date range", "End of date range", "Price"};
                     inp = SQLUtils.getInputArgs(fields);
@@ -353,7 +334,6 @@ public class App {
                     continue;
 
                 case deleteListing:
-                    /* TODO */
                     fields = new String[] {"Listing Id"};
                     inp = SQLUtils.getInputArgs(fields);
                     Listing.deleteListing(sessionUser.getSinNumber(), inp[0]);

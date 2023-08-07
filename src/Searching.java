@@ -26,7 +26,7 @@ public class Searching extends DBTable {
     private static final int exitSearch = 4;
 
     private static String displayedFields = PostingDB + ".hostSin, " + PostingDB + ".listingId, "
-        + "listingType, latitude, longitude, streetAddress, postalCode, city, country, price, startDate";
+        + "listingType, latitude, longitude, streetAddress, postalCode, city, country, minPrice, averagePrice, maxPrice";
 
     private static String postedListings = PostingDB + " INNER JOIN " + ListingDB
         + " ON " + ListingDB + ".listingId = " + PostingDB + ".listingId";
@@ -233,10 +233,10 @@ public class Searching extends DBTable {
             filter = "WHERE " + filter;
         }
 
-        filter += "ORDER BY price " + (ascendingPrice ? "ASC" : "DESC");
+        filter += "ORDER BY averagePrice " + (ascendingPrice ? "ASC" : "DESC");
 
-        String query = String.format("SELECT %s FROM %s %s",
-            displayedFields, postedListings + availableListings(), filter);
+        String query = String.format("SELECT %s FROM %s GROUP BY %s %s",
+            displayedFields, postedListings + availableListings(), displayedFields, filter);
 
         System.out.println(query);
         ResultSet rs = db.execute(query, null, null).rs;
@@ -255,8 +255,8 @@ public class Searching extends DBTable {
         String distance = "SQRT(POWER(longitude - " + d[0] + ", 2) +  POWER(latitude - " + d[1] + ", 2))";
         String filter = isNullOrEmpty(listingType) ? "" : " AND listingType = '" + listingType + "'";
 
-        String query = String.format("SELECT %s FROM %s WHERE %s != '%s' AND %s <= %f %s ORDER BY price %s, %s ASC",
-            displayedFields + ", " + distance + " AS distance", postedListings + availableListings(), ListingDB + ".listingId", d[2], distance, radius, filter, (ascendingPrice ? "ASC" : "DESC"),"10");
+        String query = String.format("SELECT %s FROM %s WHERE %s != '%s' AND %s <= %f %s GROUP BY %s ORDER BY averagePrice %s, %s ASC",
+            displayedFields + ", " + distance + " AS distance", postedListings + availableListings(), ListingDB + ".listingId", d[2], distance, radius, filter, displayedFields, (ascendingPrice ? "ASC" : "DESC"),"10");
 
         System.out.println(query);
         ResultSet rs = db.execute(query, null, null).rs;
@@ -305,10 +305,16 @@ public class Searching extends DBTable {
             filter = "WHERE " + filter;
         }
 
-        return String.format(" INNER JOIN (SELECT listingId, price, startDate FROM AvailableDate %s) AS tmp ON tmp.listingId = Posting.listingId", filter);
+        return String.format(" INNER JOIN (SELECT listingId, MIN(price) AS minPrice, AVG(price) AS averagePrice, MAX(price) AS maxPrice FROM AvailableDate %s GROUP BY listingId) AS tmp ON tmp.listingId = Posting.listingId", filter);
     }
 
 
+    public static void getRentHistory(String sin) {
+
+        // String query = String.format("SELECT %s FROM %s",
+        //     displayedFields, RenterDB);
+
+    }
 
 // CREATE TABLE Listing (
 // 	listingId INTEGER AUTO_INCREMENT PRIMARY KEY,
@@ -323,8 +329,9 @@ public class Searching extends DBTable {
 
     public static void displayListings(ResultSet rs) {
 
-        String[] fields = new String[]{"Host", "ID", "Type", "Latitude", "Longitude", "Address", "Postal code", "City", "Country", "Price", "Available"};
-        String hor = " -----------------------------------";
+        String[] fields = new String[]{"Host", "ID", "Type", "Latitude", "Longitude", "Address", "Postal code",
+            "City", "Country", "Min Price", "Average Price", "Max Price"};
+        String hor = " -------------------------------------";
         try {
             if (rs == null || !rs.next()) {
                 System.out.println("Nothing to see");
@@ -333,13 +340,13 @@ public class Searching extends DBTable {
 
             do {
                 System.out.println(hor);
-                for (int i = 0; i < 11; i++) {
-                    if (i == 9) {
+                for (int i = 0; i < 12; i++) {
+                    if (i >= 9) {
                         String amt = String.format("%.2f", rs.getDouble(i + 1));
-                        System.out.printf("| %11s: %20s |\n",
+                        System.out.printf("| %13s: %20s |\n",
                             fields[i], "$" + amt);
                     } else {
-                        System.out.printf("| %11s: %20s |\n",
+                        System.out.printf("| %13s: %20s |\n",
                             fields[i], rs.getObject(i + 1).toString());
                     }
                 }
