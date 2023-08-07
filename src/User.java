@@ -1,5 +1,7 @@
+import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Calendar;
 
 
 public class User extends DBTable {
@@ -61,6 +63,14 @@ public class User extends DBTable {
     );*/
     public static void createUser(String sin, String user, String occupation,
         String address, String dateOfBirth){
+
+        Calendar todayCalendar = Calendar.getInstance();
+        todayCalendar.roll(Calendar.YEAR, -18);
+        Calendar birthCalendar = Calendar.getInstance();
+        birthCalendar.setTime(Date.valueOf(dateOfBirth));
+        if (todayCalendar.compareTo(birthCalendar) > 0) {
+            System.out.println("You must be +18 years old in order to create an account");
+        }
 
         String query = String.format("INSERT INTO %s %s VALUES ('%s', '%s', '%s', '%s', '%s')",
             UserDB, "(sinNumber, fullName, occupation, address, dateOfBirth)",
