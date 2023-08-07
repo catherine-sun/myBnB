@@ -122,7 +122,7 @@ public class Listing extends DBTable {
             }
             str += String.format("%2d. Done\n", amenities.length + 1);
             System.out.println(str);
-            System.out.println("Enter the amenity provided by this listing:");
+            System.out.println("Enter the amenity provided by this listing (type in comma-separated list of numbers):");
             System.out.print(": ");
 
             String[] inp = input.nextLine().replaceAll(" ", "").split(",");
@@ -133,7 +133,7 @@ public class Listing extends DBTable {
                     continue;
                 }
                 if (choice >= 1 && choice <= amenities.length) {
-                    System.out.println("Enter the price of the amenity:");
+                    System.out.println("Enter the price of " + amenities[choice - 1] + ":");
                     System.out.print(": ");
                     price = input.nextDouble();
                     input.nextLine();
