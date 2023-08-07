@@ -198,6 +198,16 @@ public class Setup {
         for (String query: queries) {
             DBTable.db.executeUpdate(query, null, null);
         }
+
+        for (String amenity: Listing.amenities) {
+            String query = String.format("INSERT INTO Amenity (amenityName) VALUES ('%s')", amenity);
+            DBTable.db.executeUpdate(query, null, null);
+        }
+
+        for (int i = 0; i < 50; i ++) {
+            String query = String.format("INSERT INTO ProvidedAmenity (listingId, itemId, price) VALUES (%d, %d, %d)", ((int)(Math.random() * 12)) + 1, ((int)(Math.random() * Listing.amenities.length)) + 1, ((Math.random() * 22)) + 2);
+            DBTable.db.executeUpdate(query, null, null);
+        }
     }
     /*CREATE TABLE Rating (
 	authorSin CHAR(9),

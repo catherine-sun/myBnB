@@ -64,7 +64,8 @@ CREATE TABLE Rating (
 );
 
 CREATE TABLE Amenity (
-	itemId INTEGER PRIMARY KEY
+	itemId INTEGER AUTO_INCREMENT PRIMARY KEY,
+	amenityName VARCHAR(30)
 );
 
 CREATE TABLE ProvidedAmenity (

@@ -101,6 +101,18 @@ public class Booking extends DBTable {
                 }
             }
 
+            System.out.println("Base price of listing is " + price);
+            query = String.format("SELECT SUM(price) as totalPrice FROM ProvidedAmenity WHERE listingId = %d",
+                    listingIdNum); 
+            QueryResult res = db.execute(query, null, null);
+            try {
+                res.rs.next();
+                price += res.rs.getDouble("totalPrice");
+            } catch (SQLException e) {
+                System.out.println("Error fetching the price for amenities");
+            }        
+            System.out.println("Total price including amenities is " + price);
+
             query = String.format("INSERT INTO %s (%s) VALUES (%d, '%s', '%s', '%s', %f, '%s')",
                 BookingDB, "listingId, renterSin, startDate, endDate, price, bookingStatus", listingIdNum, sin, start, end, price, STATUS_OK);  
             
