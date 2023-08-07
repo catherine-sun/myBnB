@@ -36,28 +36,6 @@ public class App {
 
         } while (!db.connect(dbName, usr, pwd));
 
-        /*
-        * add a new profile
-        * edit profile
-        * delete profile
-        * add payment info
-        * view renting history
-        * view future bookings
-        * view listings
-        * view rental history of each listing
-        *
-        * add a new listing
-        * edit a listing
-        * update availability of listing (unless its booked)
-        * update price of a listing (during a given time range, notify host if they cannot change)
-        * remove a listing
-        *
-        * book a listing
-        * cancel a booking (record if its been canceled)
-        *
-        * rate and comment (listing, renter, hoster)
-        */
-
         /* Commands */
         final int start = 0;
         final int newSession = 1;
