@@ -1,7 +1,9 @@
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Date;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Scanner;
 
 public class Listing extends DBTable {
@@ -104,15 +106,20 @@ public class Listing extends DBTable {
 
     public static void selectAmenities (int listingId) {
         Scanner input = new Scanner(System.in);
-        String str = "\n";
-        double price;
-        for (int i = 0; i < amenities.length; i++) {
-            str += String.format("%2d. %s %s\n", i + 1, amenities[i], 
-            (price = getSuggestedAmenityPrice(amenities[i])) > 0 ? "(Suggested additional price: " + price + ")" : "");
-        }
-        str += String.format("%2d. Continue\n", amenities.length + 1);
         int choice = 0;
+
+        ArrayList<Integer> selectedChoices = new ArrayList<Integer>();
+
         do {
+            String str = "\n";
+            double price;
+            for (int i = 0; i < amenities.length; i++) {
+                if (!selectedChoices.contains(Integer.valueOf(i + 1))) {
+                    str += String.format("%2d. %s %s\n", i + 1, amenities[i], 
+                    (price = getSuggestedAmenityPrice(amenities[i])) > 0 ? "(Suggested additional price: " + price + ")" : "");
+                }
+            }
+            str += String.format("%2d. Continue\n", amenities.length + 1);
             System.out.println(str);
             System.out.println("Enter the amenity provided by this listing (type in comma-separated list of numbers):");
             System.out.print(":");
@@ -126,6 +133,7 @@ public class Listing extends DBTable {
                 String query = String.format("INSERT INTO ProvidedAmenity (itemId, listingId, price) VALUES (%d, %d, %f)",
                     choice, listingId, price);
                 db.executeUpdate(query, "Successfully added " + amenities[choice - 1] + " with a price of " + price, "Error adding amenity");
+                selectedChoices.add(Integer.valueOf(choice));
             } else if (choice != amenities.length + 1) {
                 System.out.println("Invalid choice");
             }
