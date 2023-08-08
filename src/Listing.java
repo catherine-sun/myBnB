@@ -3,7 +3,6 @@ import java.sql.SQLException;
 import java.sql.Date;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.List;
 import java.util.Scanner;
 import java.util.Arrays;
 
@@ -103,7 +102,7 @@ public class Listing extends DBTable {
                 System.out.println("The suggested listing price for this area is $" + suggestedPrice);
             } else {
                 System.out.println("There are not enough listings in this area to calculate a suggested base price");
-            }            
+            }
             setAvailableDateRange(sin, String.valueOf(listingId), true);
         }
 
@@ -158,8 +157,6 @@ public class Listing extends DBTable {
                         amenities.indexOf(amenitiesByPopularity[choice - 1]) + 1, listingId, price);
                     db.executeUpdate(query, "Successfully added " + amenitiesByPopularity[choice - 1] + " (id=" +( amenities.indexOf(amenitiesByPopularity[choice - 1]) + 1) + ") with a price of " + price, "Error adding amenity");
                     selectedChoices.add(Integer.valueOf(choice));
-                } else if (choice != amenitiesByPopularity.length + 1) {
-                    System.out.println("Invalid choice");
                 }
             }
         } while (choice != amenitiesByPopularity.length + 1);
@@ -214,7 +211,7 @@ public class Listing extends DBTable {
         startCalendar.setTime(startDate);
         Calendar endCalendar = Calendar.getInstance();
         endCalendar.setTime(endDate);
-        if (startCalendar.compareTo(endCalendar) > 0) {
+        if (startCalendar.compareTo(endCalendar) >= 0) {
             System.out.println("End date cannot be earlier than the start date");
         } else {
             boolean datesAreAvailable = true;
@@ -236,7 +233,7 @@ public class Listing extends DBTable {
 
                         try {
                             if (res.rs.next()) {
-                                datesAreAvailable = true;
+                                datesAreAvailable = false;
                                 System.out.println("The selected listing is already booked for the date " + dateString);
                             }
                         } catch (SQLException e) {

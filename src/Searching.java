@@ -15,10 +15,14 @@ public class Searching extends DBTable {
     private static final int start = -1;
     private static final int edit = 0;
     private static final int clear = 1;
-    private static final int exact = 2;
-    private static final int nearby = 3;
-    private static final int worldwide = 4;
-    private static final int exitSearch = 5;
+    private static final int addAmenity = 2;
+    private static final int removeAmenity = 3;
+    private static final int exact = 4;
+    private static final int nearby = 5;
+    private static final int worldwide = 6;
+    private static final int exitSearch = 7;
+
+    private static ArrayList<Integer> selectedAmenities = new ArrayList<>();
 
     private static String displayedFields = PostingDB + ".hostSin, latitude, " + PostingDB + ".listingId, "
         + "longitude, listingType, streetAddress, minPrice, postalCode, averagePrice, city, maxPrice, country";
@@ -43,6 +47,7 @@ public class Searching extends DBTable {
             switch (choice) {
                 case edit:
                     do {
+                        System.out.println("******* Edit Filter *******");
                         System.out.print("1 - Listing Type\n"
                             + "2 - Start Date\n"
                             + "3 - End Date\n"
@@ -72,6 +77,7 @@ public class Searching extends DBTable {
 
                 case clear:
                     do {
+                        System.out.println("******* Clear Filter *******");
                         i = 1;
                         String opt = "";
                         ArrayList<String> optArr = new ArrayList<>();
@@ -165,6 +171,14 @@ public class Searching extends DBTable {
                     searchByAddress(null, null, null, null);
                     break;
 
+                case addAmenity:
+                    addDesiredAmenity(input);
+                    break;
+
+                case removeAmenity:
+                    removeDesiredAmenity(input);
+                    break;
+
                 case exitSearch:
                     break;
 
@@ -175,7 +189,19 @@ public class Searching extends DBTable {
     }
 
     public static String getSearchPrompt() {
-        String filter = "******* Current Filter *******\n"
+        String filter = "******* Desired Amenities *******\n";
+
+        if (selectedAmenities != null) {
+            filter += selectedAmenities.size() > 0 ? "" : "Nothing yet\n";
+            int i = 1;
+            for (int choice : selectedAmenities) {
+                filter += String.format("%2d. %s\n",
+                    i, Listing.amenities.get(choice - 1));
+                i++;
+            }
+        }
+
+        filter += "******* Current Filter *******\n"
             + (listingType == null ? "" : " - Type:\t" + listingType + "\n")
             + (startDate == null ? "" : " - Start Date:\t" + startDate + "\n")
             + (endDate == null ? "" : " - End Date:\t" + endDate + "\n")
@@ -183,15 +209,18 @@ public class Searching extends DBTable {
             + (maxPrice == null ? "" : " - Max Price:\t" + maxPrice + "\n")
             + (ascendingPrice ? " - Sort Price:\tLow to High\n" : " - Sort Price:\tHigh to Low\n");
 
+
         return String.format(filter
             + "******* Search Options *******\n"
             + "%2d - Edit filter\n"
             + "%2d - Clear filters\n"
+            + "%2d - Add desired amenities\n"
+            + "%2d - Remove desired amenities\n"
             + "%2d - Search exact destination\n"
             + "%2d - Search nearby postal codes\n"
             + "%2d - Search world wide\n"
             + "%2d - Exit search",
-            edit, clear, exact, nearby, worldwide, exitSearch);
+            edit, clear, addAmenity, removeAmenity, exact, nearby, worldwide, exitSearch);
     }
 
     public static void updateFilter(String field, String val) {
@@ -238,6 +267,8 @@ public class Searching extends DBTable {
             + (!hasType && (prev = prev || !hasCountry) ? " AND " : "")
             + (hasType ? "" : "listingType = '" + listingType + "'");
 
+        filter += getAmenityFilter();
+
         if (!isNullOrEmpty(filter)) {
             filter = "WHERE " + filter;
         }
@@ -263,8 +294,10 @@ public class Searching extends DBTable {
         String filter = (radius < 0 ? "" : " AND " + distance + " <= " + radius)
             + (isNullOrEmpty(listingType) ? "" : " AND listingType = '" + listingType + "'");
 
-        String query = String.format("SELECT %s FROM %s WHERE %s != '%s' %s GROUP BY %s ORDER BY averagePrice %s, %s ASC",
-            displayedFields + ", " + distance + " AS distance", postedListings + availableListings(), ListingDB + ".listingId", d[2], filter, displayedFields, (ascendingPrice ? "ASC" : "DESC"),"10");
+        filter += isNullOrEmpty(filter) ? "" : " AND" + getAmenityFilter();
+
+        String query = String.format("SELECT %s FROM %s WHERE %s GROUP BY %s ORDER BY averagePrice %s, %s ASC",
+            displayedFields + ", " + distance + " AS distance", postedListings + availableListings(), filter, displayedFields, (ascendingPrice ? "ASC" : "DESC"),"10");
 
         System.out.println(query);
         ResultSet rs = db.execute(query, null, null).rs;
@@ -273,7 +306,9 @@ public class Searching extends DBTable {
 
     public static String[] getXYFromPostalCode(String postalCode) {
         String query = String.format("SELECT %s FROM %s WHERE %s = '%s'",
-        "longitude, latitude, Listing.listingId, postalCode", postedListings, "postalCode", postalCode);
+        "longitude, latitude, postalCode", postedListings + availableListings(), "postalCode", postalCode);
+
+        query += isNullOrEmpty(query) ? "" : " AND" + getAmenityFilter();
 
         ResultSet rs = db.execute(query, null, null).rs;
         try {
@@ -365,6 +400,82 @@ public class Searching extends DBTable {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
+    }
+
+    public static void addDesiredAmenity(Scanner input) {
+        int choice = 0;
+
+        System.out.println("******* List of Amenities *******");
+        for (int i = 0; i < Listing.amenities.size(); i++) {
+            if (!selectedAmenities.contains(Integer.valueOf(i + 1))) {
+                System.out.printf("%2d. %-30s", i + 1, Listing.amenities.get(i));
+            }
+            if ((i + 1)%2 == 0 || i + 1 == Listing.amenities.size()) {
+                System.out.println();
+            }
+        }
+        System.out.println("Enter the amenity you are looking for (type in comma-separated list of numbers):");
+        System.out.print(": ");
+
+        String cmd = input.nextLine().replaceAll(" ", "");
+        if (isNullOrEmpty(cmd)) {
+            System.out.println("No changes made");
+            return;
+        }
+        String[] inp = cmd.split(",");
+        for (String s : inp) {
+            choice = Integer.parseInt(s);
+            if (selectedAmenities.contains(choice)) {
+                System.out.println(Listing.amenities.get(choice - 1) + " already added");
+            } else if (choice >= 1 && choice <= Listing.amenities.size()) {
+                selectedAmenities.add(choice);
+            }
+        }
+    }
+
+    public static void removeDesiredAmenity(Scanner input) {
+        int choice = 0;
+        if (selectedAmenities == null || selectedAmenities.isEmpty()) {
+            System.out.println("No amenities currently selected");
+            return;
+        }
+
+        System.out.println("******* Your Selected Amenities *******");
+        for (int i = 0; i < selectedAmenities.size(); i++) {
+            System.out.printf("%2d. %-30s", i + 1, Listing.amenities.get(selectedAmenities.get(i) - 1));
+            if ((i + 1)%2 == 0 || i + 1 == selectedAmenities.size()) {
+                System.out.println();
+            }
+        }
+        System.out.println("Enter the amenity filter you would like to remove (type in comma-separated list of numbers):");
+        System.out.print(": ");
+
+        String cmd = input.nextLine().replaceAll(" ", "");
+        if (isNullOrEmpty(cmd)) {
+            System.out.println("No changes made");
+            return;
+        }
+        String[] inp = cmd.split(",");
+        for (String s : inp) {
+            choice = Integer.parseInt(s);
+            if (choice >= 1 && choice <= selectedAmenities.size()) {
+                System.out.println(Listing.amenities.get(selectedAmenities.get(choice - 1) - 1) + " sucessfully removed");
+                selectedAmenities.remove(choice - 1);
+            }
+        }
+    }
+
+    public static String getAmenityFilter() {
+        if (selectedAmenities == null || selectedAmenities.isEmpty()) {
+            return "";
+        }
+        String filter = "";
+        for (int choice : selectedAmenities) {
+            filter += filter.isEmpty() ? "" : " AND ";
+            filter += "itemId = " + choice;
+        }
+
+        return String.format(" EXISTS (SELECT listingId, itemId FROM ProvidedAmenity WHERE %s AND ProvidedAmenity.listingId = Posting.listingId)", filter);
     }
 
 }
