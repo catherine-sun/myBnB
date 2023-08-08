@@ -151,7 +151,7 @@ public class Booking extends DBTable {
                         inputs = SQLUtils.getInputArgs(fields);
                     } while (!inputs[0].equals("Host") && !inputs[0].equals("Listing"));
                 } else {
-                    fields  = new String[] {"Rating"};
+                    fields  = new String[] {"Rating (1 to 5)"};
                     inputs = SQLUtils.getInputArgs(fields);
                     inputs = new String[] { "Renter", inputs[0]};
                 }
