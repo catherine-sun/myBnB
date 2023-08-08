@@ -336,7 +336,6 @@ public class Searching extends DBTable {
                 return new String[]{x, y, id};
             }
         } catch (SQLException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
 
@@ -367,17 +366,6 @@ public class Searching extends DBTable {
 
         return String.format(" INNER JOIN (SELECT listingId, MIN(price) AS minPrice, AVG(price) AS averagePrice, MAX(price) AS maxPrice FROM AvailableDate %s GROUP BY listingId) AS tmp ON tmp.listingId = Posting.listingId", filter);
     }
-
-// CREATE TABLE Listing (
-// 	listingId INTEGER AUTO_INCREMENT PRIMARY KEY,
-// 	listingType VARCHAR(30),
-// 	latitude REAL CHECK (latitude >= -90 AND latitude <= 90),
-// 	longitude REAL CHECK (longitude >= -180 AND longitude <= 180),
-// 	streetAddress VARCHAR(30) NOT NULL,
-// 	postalCode CHAR(6) NOT NULL,
-// 	city VARCHAR(30) NOT NULL,
-// 	country VARCHAR(30) NOT NULL
-// );
 
     public static void displayListings(ResultSet rs, String[] fields) {
         String hor = " " + "-".repeat(98);
@@ -418,8 +406,7 @@ public class Searching extends DBTable {
             System.out.println(hor);
 
         } catch (SQLException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+=            e.printStackTrace();
         }
     }
 

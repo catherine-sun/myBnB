@@ -144,48 +144,13 @@ public class User extends DBTable {
                 return rs.getString("fullName");
             }
         } catch (SQLException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
 
         return null;
     }
 
-
-// CREATE TABLE Booking (
-// 	listingId INTEGER,
-// 	renterSin CHAR(9),
-// 	startDate DATE,
-// 	endDate DATE NOT NULL,
-// 	bookingStatus VARCHAR(20) NOT NULL,
-// 	price REAL CHECK (price >= 0),
-// 	PRIMARY KEY(listingId, renterSin, startDate),
-// 	FOREIGN KEY (listingId) REFERENCES Listing(listingId) ON DELETE CASCADE ON UPDATE CASCADE,
-// 	FOREIGN KEY (renterSin) REFERENCES User(sinNumber) ON DELETE CASCADE ON UPDATE CASCADE,
-// 	CHECK (startDate <= endDate)
-// );
-
-// CREATE TABLE Rating (
-// 	authorSin CHAR(9),
-// 	renterSin CHAR(9),
-// 	listingId INTEGER,
-// 	startDate DATE,
-// 	commentBody TEXT,
-// 	score INTEGER CHECK (score >= 1 AND score <= 5) NOT NULL,
-// 	object VARCHAR(30),
-// 	PRIMARY KEY (authorSin, renterSin, listingId, startDate, object),
-// 	FOREIGN KEY (renterSin) REFERENCES User(sinNumber) ON DELETE CASCADE ON UPDATE CASCADE,
-// 	FOREIGN KEY (listingId) REFERENCES Listing(listingId) ON DELETE CASCADE ON UPDATE CASCADE,
-// 	FOREIGN KEY (renterSin, listingId, startDate) REFERENCES Booking(renterSin, listingId, startDate) ON DELETE CASCADE ON UPDATE CASCADE
-// );
-
-// SELECT bookingStatus, Booking.startDate, endDate, score, commentBody FROM
-// Booking INNER JOIN (SELECT renterSin, listingId, startDate, score, commentBody
-// FROM Rating ORDER BY startDate DESC) AS tmp ON tmp.renterSin = Booking.renterSin
-// AND tmp.listingId = Booking.listingId AND tmp.startDate = Booking.startDate WHERE Booking.renterSin = '266666662';
-
-
-public static void getRenterHistory(String sin) {
+    public static void getRenterHistory(String sin) {
         String displayedFields = "Booking.listingId, "
             + "latitude, listingType, longitude, bookingStatus, streetAddress, Booking.startDate, postalCode, "
             + "endDate, city, score, country";
@@ -234,7 +199,6 @@ public static void getRenterHistory(String sin) {
         System.out.println(hor);
 
         } catch (SQLException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }
@@ -255,20 +219,5 @@ public static void getRenterHistory(String sin) {
             "Average Price:", "City:", "Max Price:", "Country:"};
         Searching.displayListings(db.execute(query, null, null).rs, fields);
     }
-
-    /*CREATE TABLE Renter (
-        sin CHAR(9) PRIMARY KEY,
-        paymentInfo VARCHAR(30),
-        FOREIGN KEY (sin) REFERENCES User(sin)
-            ON DELETE CASCADE
-            ON UPDATE CASCADE
-    );*/
-
-    /*CREATE TABLE Host (
-        sin CHAR(9) PRIMARY KEY,
-        FOREIGN KEY (sin) REFERENCES User(sin)
-            ON DELETE CASCADE
-            ON UPDATE CASCADE
-    );*/
 
 }
