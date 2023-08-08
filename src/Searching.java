@@ -477,11 +477,11 @@ public class Searching extends DBTable {
         }
         String filter = "";
         for (int choice : selectedAmenities) {
-            filter += filter.isEmpty() ? "" : " AND ";
-            filter += "itemId = " + choice;
+            String tmp = String.format(" EXISTS (SELECT listingId, itemId FROM ProvidedAmenity WHERE itemId = %d AND ProvidedAmenity.listingId = Posting.listingId)", choice);
+            filter = filter.isEmpty() ? tmp : filter + " AND " + tmp;
         }
 
-        return String.format(" EXISTS (SELECT listingId, itemId FROM ProvidedAmenity WHERE %s AND ProvidedAmenity.listingId = Posting.listingId)", filter);
+        return filter;
     }
 
 }
