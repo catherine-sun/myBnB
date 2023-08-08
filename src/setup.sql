@@ -58,6 +58,7 @@ CREATE TABLE Rating (
 	score INTEGER CHECK (score >= 1 AND score <= 5) NOT NULL,
 	object VARCHAR(30),
 	PRIMARY KEY (authorSin, renterSin, listingId, startDate, object),
+	FOREIGN KEY (authorSin) REFERENCES User(sinNumber) ON DELETE CASCADE ON UPDATE CASCADE,
 	FOREIGN KEY (listingId) REFERENCES Listing(listingId) ON DELETE CASCADE ON UPDATE CASCADE,
 	FOREIGN KEY (renterSin, listingId, startDate)
     REFERENCES Booking(renterSin, listingId, startDate) ON DELETE CASCADE ON UPDATE CASCADE
