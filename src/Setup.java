@@ -217,7 +217,7 @@ public class Setup {
              String dateString = String.format("%d-%02d-%02d", startCalendar.get(Calendar.YEAR),
              startCalendar.get(Calendar.MONTH) + 1, startCalendar.get(Calendar.DAY_OF_MONTH));
 
-             for (int i = 1; i < ((int)(Math.random() * 97)) + 3; i++) {
+             for (int i = 1; i < ((int)(Math.random() * 60)) + 30; i++) {
                  String query = String.format("INSERT INTO %s (%s) VALUES (%d, '%s', %f)",
                      DBTable.AvailableDateDB, "listingId, startDate, price",  i, dateString, (double) Math.round(Math.random() * 17000) / 100 + 40);
                  System.out.println(query);
