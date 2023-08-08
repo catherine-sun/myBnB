@@ -186,6 +186,9 @@ public class App {
 
                 case exit:
                     continue;
+                
+                case reports:
+                    continue;
 
                 default:
                     if (sessionUser == null) {
