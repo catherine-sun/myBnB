@@ -255,16 +255,15 @@ public class Searching extends DBTable {
         boolean hasCity = isNullOrEmpty(city);
         boolean hasCountry = isNullOrEmpty(country);
         boolean hasType = isNullOrEmpty(listingType);
-        boolean prev = !hasAddr;
 
         String filter = (hasAddr ? "" : "streetAddress = '" + streetAddress + "'")
             + (!hasPCode && !hasAddr ? " AND " : "")
             + (hasPCode ? "" : "postalCode = '" + postalCode + "'")
-            + (!hasCity && (prev = prev || !hasPCode) ? " AND " : "")
+            + (!hasCity && (!hasPCode || !hasAddr) ? " AND " : "")
             + (hasCity ? "" : "city = '" + city + "'")
-            + (!hasCountry && (prev = prev || !hasCity) ? " AND " : "")
+            + (!hasCountry && (!hasCity || !hasPCode || !hasAddr) ? " AND " : "")
             + (hasCountry ? "" : "country = '" + country + "'")
-            + (!hasType && (prev = prev || !hasCountry) ? " AND " : "")
+            + (!hasType && (!hasCountry || !hasCity || !hasPCode || !hasAddr) ? " AND " : "")
             + (hasType ? "" : "listingType = '" + listingType + "'");
 
         String amenityFilter = getAmenityFilter();
@@ -306,7 +305,6 @@ public class Searching extends DBTable {
             filter += isNullOrEmpty(filter) ? amenityFilter : " AND" + amenityFilter;
         }
         filter = isNullOrEmpty(filter) ? "" : "WHERE " + filter;
-        System.out.println(filter);
 
         String query = String.format("SELECT %s FROM %s %s GROUP BY %s ORDER BY %s ASC, averagePrice %s",
             displayedFields + ", " + distance + " AS distance", postedListings + availableListings(), filter, displayedFields, "distance", (ascendingPrice ? "ASC" : "DESC"));

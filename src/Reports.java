@@ -394,7 +394,7 @@ public class Reports extends DBTable {
 
 	public static void getPopularNounPhrases() {
 
-		String query = "SELECT commentBody, listingId FROM Rating WHERE commentBody IS NOT NULL";
+		String query = "SELECT commentBody, listingId, renterSin, startDate FROM Rating WHERE commentBody IS NOT NULL";
 
 		QueryResult res = db.execute(query, null, null);
 
@@ -406,9 +406,10 @@ public class Reports extends DBTable {
 			while (res.rs.next()) {
 				id = res.rs.getString("listingId");
 				if (texts.containsKey(id)) {
-					texts.replace(id, res.rs.getString("commentBody") + ". ");
+					String tex = texts.get(id);
+					texts.replace(id, tex + ". " + res.rs.getString("commentBody"));
 				} else {
-					texts.put(id, res.rs.getString("commentBody") + ". ");
+					texts.put(id, res.rs.getString("commentBody"));
 				}
 			}
 

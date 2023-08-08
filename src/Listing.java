@@ -127,9 +127,10 @@ public class Listing extends DBTable {
             }
         }
         do {
-            String str = "Possible Amenities (Ordered By Popularity)\n";
+            System.out.println("Possible Amenities (Ordered By Popularity)");
             double price;
-            System.out.printf("\n%28s %-20s", "", "Suggested additional price");
+            String str = "";
+            System.out.printf("\n%28s %-20s", "", "Suggested additional price\n");
             for (int i = 0; i < amenitiesByPopularity.length; i++) {
                 if (!selectedChoices.contains(Integer.valueOf(i + 1))) {
                     str += String.format("%2d. %-30s %20s\n", i + 1, amenitiesByPopularity[i],
